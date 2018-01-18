@@ -21,10 +21,14 @@ endif
 SRCDIR := src
 BUILDDIR := build
 TARGETDIR := bin
+TESTDIR := tests
 
 # Targets
 EXECUTABLE := md_replay
 TARGET := $(TARGETDIR)/$(EXECUTABLE)
+
+TESTEXECUTABLE := $(EXECUTABLE)_test
+TESTTARGET := $(TARGETDIR)/$(TESTEXECUTABLE)
 
 # Final Paths
 INSTALLBINDIR := /usr/local/bin
@@ -34,9 +38,16 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
+TESTSOURCES := $(shell find $(TESTDIR) -type f -name *.$(SRCEXT))
+TESTOBJECTS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/%,$(TESTSOURCES:.$(SRCEXT)=.o)) $(filter-out $(BUILDDIR)/main.o,$(OBJECTS))
+
 # Shared Compiler Flags
 CFLAGS := -c -Wall -Wextra
+
 LIB := -L /usr/local/lib
+
+TESTLIB := -L /usr/local/lib -lpthread -L ../gtestdist/lib -lgtest -lgtest_main
+TESTINC := -I ../gtestdist/include -I $(SRCDIR)
 
 # Platform Specific Compiler Flags
 ifeq ($(UNAME_S),Linux)
@@ -44,6 +55,10 @@ ifeq ($(UNAME_S),Linux)
 else
   CFLAGS += -std=c++14 -stdlib=libc++ -O2
 endif
+
+.DEFAULT_GOAL := $(TARGET)
+
+all : $(TARGET) $(TESTTARGET)
 
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(TARGETDIR)
@@ -54,8 +69,17 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
 	@echo "Compiling $<..."; $(CC) $(CFLAGS) -c -o $@ $<
 
+$(TESTTARGET): $(TESTOBJECTS)
+	@mkdir -p $(TARGETDIR)
+	@echo "Linking..."
+	@echo "  Linking $(TESTTARGET)"; $(CC) $^ -o $(TESTTARGET) $(TESTLIB)
+
+$(BUILDDIR)/%.o: $(TESTDIR)/%.$(SRCEXT)
+	@mkdir -p $(BUILDDIR)
+	@echo "Compiling $<..."; $(CC) $(CFLAGS) $(TESTINC) -c -o $@ $<
+
 clean:
-	@echo "Cleaning $(TARGET)..."; $(RM) -r $(BUILDDIR) $(TARGET)
+	@echo "Cleaning $(TARGET) $(TESTTARGET)..."; $(RM) -r $(BUILDDIR) $(TARGET) $(TESTTARGET)
 
 install:
 	@echo "Installing $(EXECUTABLE)..."; cp $(TARGET) $(INSTALLBINDIR)
