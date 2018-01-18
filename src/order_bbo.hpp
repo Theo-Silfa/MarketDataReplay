@@ -18,7 +18,7 @@
 using namespace std;
 
 //Forward declarations
-class OrderRequest;
+struct OrderRequest;
 class OrderBbo;
 
 /**
@@ -33,7 +33,7 @@ ostream & operator<<(ostream & out, const OrderBbo & obj);
  * Order Best Bid Offer class. Holds the information about the current
  * BBO. Can be invalidated.
  */
-class OrderBbo
+class OrderBbo final
 {
 public:
     /** Order range definition for convinience */
@@ -63,6 +63,9 @@ protected:
 
     /** Range from order list for asks */
     OrderRangeIterators  ask;
+
+    /** Deleted default constructor */
+    OrderBbo() = delete;
 };
 
 #endif //_ORDERBBO_H
