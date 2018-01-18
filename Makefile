@@ -1,9 +1,9 @@
 #
 #  Makefile
-#  SantaCruzServer
+#  market_data_replay
 #
-#  Created by Hilton Lipschitz on 2015-09-01.
-#  Copyright (c) 2015 Maritime Capital LP. All rights reserved.
+#  Created by Fedor Lisochenko on 14.01.2018.
+#  Copyright © 2018 Fedor Lisochenko. All rights reserved.
 #
 
 # HIL: No spaces or comments after otherwise it captures them!
@@ -34,15 +34,8 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-# Folder Lists
-# Note: Intentionally excludes the root of the include folder so the lists are clean
-INCDIRS := $(shell find include/**/* -name '*.h' -exec dirname {} \; | sort | uniq)
-INCLIST := $(patsubst include/%,-I include/%,$(INCDIRS))
-BUILDLIST := $(patsubst include/%,$(BUILDDIR)/%,$(INCDIRS))
-
 # Shared Compiler Flags
-CFLAGS := -c
-INC := -I include $(INCLIST) -I /usr/local/include
+CFLAGS := -c -Wall -Wextra
 LIB := -L /usr/local/lib
 
 # Platform Specific Compiler Flags
@@ -59,7 +52,7 @@ $(TARGET): $(OBJECTS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
-	@echo "Compiling $<..."; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@echo "Compiling $<..."; $(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	@echo "Cleaning $(TARGET)..."; $(RM) -r $(BUILDDIR) $(TARGET)
