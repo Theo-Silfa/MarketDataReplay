@@ -48,9 +48,7 @@ void SymbolOrderList::cancel(uint64_t order_id) {
 OrderBbo SymbolOrderList::bbo()
 {
     //TODO: use std::multiset::equal_range
-    OrderBbo::OrderRangeIterators range_buy;
-    OrderBbo::OrderRangeIterators range_sell;
-    return OrderBbo(range_buy, range_sell);
+    return OrderBbo(0, 0.0, 0, 0, 0.0, 0);
 }
 
 OrderVwap SymbolOrderList::vwap(uint64_t quantity)

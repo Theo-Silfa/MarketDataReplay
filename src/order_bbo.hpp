@@ -11,14 +11,12 @@
 
 //System includes
 #include <ostream>
-#include <set>
 
 //Local includes
 
 using namespace std;
 
 //Forward declarations
-struct OrderRequest;
 class OrderBbo;
 
 /**
@@ -36,33 +34,58 @@ ostream & operator<<(ostream & out, const OrderBbo & obj);
 class OrderBbo final
 {
 public:
-    /** Order range definition for convinience */
-    using OrderRangeIterators =
-        pair<multiset<OrderRequest>::iterator,
-             multiset<OrderRequest>::iterator>;
-
     /**
      * Constructor
-     * @param bid range for the BBO order for buy
-     * @param ask range for the BBO order for sell
+     * @param buy_total_volume cumulative volume for buy orders
+     * @param buy_share_price buy share price level
+     * @param buy_order_count number of same price level buy orders
+     * @param sell_total_volume cumulative volume for sell orders
+     * @param sell_share_price sell share price level
+     * @param sell_order_count number of same price level sell orders
      */
-    OrderBbo(OrderRangeIterators bid, OrderRangeIterators ask);
+    OrderBbo(uint64_t buy_total_volume,
+             double buy_share_price,
+             uint32_t buy_order_count,
+             uint64_t sell_total_volume,
+             double sell_share_price,
+             uint32_t sell_order_count);
 
     /** Default destructor */
     ~OrderBbo() = default;
 
-    /** Friend definition for the out stream */
+    /** Set nil state for buys */
+    void setBuyNil(bool state);
+
+    /** Set nil state for sells */
+    void setSellNil(bool state);
+
+        /** Friend definition for the out stream */
     friend ostream & operator<<(ostream & os, const OrderBbo & obj);
 
-    /** Calculate the current range */
-    void calculate();
-
 protected:
-    /** Range from order list for bids */
-    OrderRangeIterators  bid;
+    /** Cumulative volume for buy orders */
+    uint64_t buy_total_volume_;
 
-    /** Range from order list for asks */
-    OrderRangeIterators  ask;
+    /** Buy share price level */
+    double buy_share_price_;
+
+    /** Number of same price level buy orders */
+    uint32_t buy_order_count_;
+
+    /** Cumulative volume for sell orders */
+    uint64_t sell_total_volume_;
+
+    /** Sell share price level */
+    double sell_share_price_;
+
+    /** Number of same price level sell orders */
+    uint32_t sell_order_count_;
+
+    /** Flag to indicate if buy bbo is present */
+    bool nil_buy_;
+
+    /** Flag to indicate if sell bbo is present */
+    bool nil_sell_;
 
     /** Deleted default constructor */
     OrderBbo() = delete;

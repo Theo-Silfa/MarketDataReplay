@@ -15,7 +15,7 @@
 //Local includes
 
 //Forward declarations
-class OrderRequest;
+struct OrderRequest;
 
 using namespace std;
 

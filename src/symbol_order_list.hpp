@@ -20,10 +20,10 @@
 using namespace std;
 
 //Forward declarations
+struct OrderRequest;
+struct OrderVwap;
 class OrderBbo;
-class OrderRequest;
 class OrderIterator;
-class OrderVwap;
 
 /**
  * Order List class. Only orders for specific symbol are held.
@@ -53,7 +53,7 @@ public:
      * @return symbol associated with this object
      */
     const string & symbol();
-    
+
     /**
      * Is used to add a valid order to this object. BBO will be
      * recalculated in this case
@@ -72,7 +72,7 @@ public:
      * @param price for one share
      */
     void modify(uint64_t order_id, uint64_t quantity, double price);
-    
+
     /**
      * Is used to cancel the existing order in this object.
      * BBO will be recalculated in this case
@@ -85,7 +85,7 @@ public:
      * @return object with current BBO
      */
     OrderBbo bbo();
-    
+
     /**
      * Is used to get the current Volume Weighted Average Price (VWAP)
      * @param quantity number of shares to use for calculation

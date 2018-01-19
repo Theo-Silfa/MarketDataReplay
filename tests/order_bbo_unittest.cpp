@@ -33,27 +33,26 @@ const multiset<OrderRequest, greater<OrderRequest>> orders_buy =
 const multiset<OrderRequest, less<OrderRequest>> orders_sell_ =
         {order_one, order_two, order_three, order_four};
 
+const auto buy_range = orders_buy.equal_range(*(orders_buy.begin()));
+const auto sell_range = orders_sell_.equal_range(*(orders_sell_.begin()));
+
+const auto bbo_buy_volume = order_one.quantity + order_two.quantity;
+const auto bbo_buy_price = order_one.price;
+const auto orders_in_buy_range = distance(buy_range.first, buy_range.second);
+const auto bbo_sell_volume = order_three.quantity + order_four.quantity;
+const auto bbo_sell_price = order_four.price;
+const auto orders_in_sell_range = distance(sell_range.first, sell_range.second);
+
 /************************** OrderBboTestCase **************************/
 
-TEST(OrderBboTestCase, CalculateTest)
+TEST(OrderBboTestCase, RegularRunTest)
 {
-    auto buy_range = orders_buy.equal_range(*(orders_buy.begin()));
-    auto sell_range = orders_buy.equal_range(*(orders_buy.begin()));
-
-    OrderBbo bbo(buy_range, sell_range);
-
-    bbo.calculate();
+    OrderBbo bbo(bbo_buy_volume, bbo_buy_price, orders_in_buy_range,
+        bbo_sell_volume, bbo_sell_price, orders_in_sell_range);
 
     stringstream actual, expected;
 
     actual << bbo;
-
-    auto bbo_buy_volume = order_one.quantity + order_two.quantity;
-    auto bbo_sell_volume = order_three.quantity + order_four.quantity;
-    auto bbo_buy_price = order_one.price;
-    auto bbo_sell_price = order_four.price;
-    auto orders_in_buy_range = distance(buy_range.first, buy_range.second);
-    auto orders_in_sell_range = distance(sell_range.first, sell_range.second);
 
     expected << '|' << setw(default_width) << orders_in_buy_range
             << '|' << setw(default_width) << bbo_buy_volume
@@ -66,12 +65,12 @@ TEST(OrderBboTestCase, CalculateTest)
     EXPECT_EQ(actual.str(), expected.str());
 }
 
-TEST(OrderBboTestCase, NotCalculatedTest)
+TEST(OrderBboTestCase, BuySellNilTest)
 {
-    auto buy_range = orders_buy.equal_range(*(orders_buy.begin()));
-    auto sell_range = orders_buy.equal_range(*(orders_buy.begin()));
+    OrderBbo bbo(0, 0.0, 0, 0, 0.0, 0);
 
-    OrderBbo bbo(buy_range, sell_range);
+    bbo.setBuyNil(true);
+    bbo.setSellNil(true);
 
     stringstream actual, expected;
 
@@ -88,22 +87,15 @@ TEST(OrderBboTestCase, NotCalculatedTest)
     EXPECT_EQ(actual.str(), expected.str());
 }
 
-TEST(OrderBboTestCase, EmptyBuyRangeTest)
+TEST(OrderBboTestCase, BuyNilRangeTest)
 {
-    OrderBbo::OrderRangeIterators buy_range;
-    auto sell_range = orders_buy.equal_range(*(orders_buy.begin()));
+    OrderBbo bbo(0, 0.0, 0, bbo_sell_volume, bbo_sell_price, orders_in_sell_range);
 
-    OrderBbo bbo(buy_range, sell_range);
-
-    bbo.calculate();
+    bbo.setBuyNil(true);
 
     stringstream actual, expected;
 
     actual << bbo;
-
-    auto bbo_sell_volume = order_three.quantity + order_four.quantity;
-    auto bbo_sell_price = order_four.price;
-    auto orders_in_sell_range = distance(sell_range.first, sell_range.second);
 
     expected << '|' << setw(default_width) << NIL
             << '|' << setw(default_width) << NIL
@@ -116,50 +108,19 @@ TEST(OrderBboTestCase, EmptyBuyRangeTest)
     EXPECT_EQ(actual.str(), expected.str());
 }
 
-TEST(OrderBboTestCase, EmptySellRangeTest)
+TEST(OrderBboTestCase, SellNilRangeTest)
 {
-    auto buy_range = orders_buy.equal_range(*(orders_buy.begin()));
-    OrderBbo::OrderRangeIterators sell_range;
+    OrderBbo bbo(bbo_buy_volume, bbo_buy_price, orders_in_buy_range, 0, 0.0, 0);
 
-    OrderBbo bbo(buy_range, sell_range);
-
-    bbo.calculate();
+    bbo.setSellNil(true);
 
     stringstream actual, expected;
 
     actual << bbo;
-
-    auto bbo_buy_volume = order_one.quantity + order_two.quantity;
-    auto bbo_buy_price = order_one.price;
-    auto orders_in_buy_range = distance(buy_range.first, buy_range.second);
 
     expected << '|' << setw(default_width) << orders_in_buy_range
             << '|' << setw(default_width) << bbo_buy_volume
             << '|' << setw(default_width) << fixed << setprecision(default_precision) << bbo_buy_price
-            << '|' << setw(default_width) << NIL
-            << '|' << setw(default_width) << NIL
-            << '|' << setw(default_width) << NIL
-            << '|';
-
-    EXPECT_EQ(actual.str(), expected.str());
-}
-
-TEST(OrderBboTestCase, EmptyRangesTest)
-{
-    OrderBbo::OrderRangeIterators buy_range;
-    OrderBbo::OrderRangeIterators sell_range;
-
-    OrderBbo bbo(buy_range, sell_range);
-
-    bbo.calculate();
-
-    stringstream actual, expected;
-
-    actual << bbo;
-
-    expected << '|' << setw(default_width) << NIL
-            << '|' << setw(default_width) << NIL
-            << '|' << setw(default_width) << NIL
             << '|' << setw(default_width) << NIL
             << '|' << setw(default_width) << NIL
             << '|' << setw(default_width) << NIL
