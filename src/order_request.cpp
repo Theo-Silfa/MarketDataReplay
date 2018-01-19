@@ -16,17 +16,17 @@
 
 bool operator<(const OrderRequest &lhs, const OrderRequest &rhs)
 {
-    return (lhs.price < rhs.price ? true : false);
+    return lhs.price < rhs.price;
 }
 
 bool operator>(const OrderRequest &lhs, const OrderRequest &rhs)
 {
-    return (lhs.price > rhs.price ? true : false);
+    return lhs.price > rhs.price;
 }
 
 bool operator==(const OrderRequest &lhs, const OrderRequest &rhs)
 {
-    return (lhs.price == rhs.price ? true : false);
+    return lhs.price == rhs.price;
 }
 
 ostream & operator<<(ostream &out, const OrderVwap &obj)

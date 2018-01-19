@@ -35,7 +35,7 @@ const multiset<OrderRequest, less<OrderRequest>> orders_sell_ =
 
 /************************** OrderBboTestCase **************************/
 
-TEST(CalculateTest, OrderBboTestCase)
+TEST(OrderBboTestCase, CalculateTest)
 {
     auto buy_range = orders_buy.equal_range(*(orders_buy.begin()));
     auto sell_range = orders_buy.equal_range(*(orders_buy.begin()));
@@ -66,7 +66,7 @@ TEST(CalculateTest, OrderBboTestCase)
     EXPECT_EQ(actual.str(), expected.str());
 }
 
-TEST(NotCalculatedTest, OrderBboTestCase)
+TEST(OrderBboTestCase, NotCalculatedTest)
 {
     auto buy_range = orders_buy.equal_range(*(orders_buy.begin()));
     auto sell_range = orders_buy.equal_range(*(orders_buy.begin()));
@@ -88,7 +88,7 @@ TEST(NotCalculatedTest, OrderBboTestCase)
     EXPECT_EQ(actual.str(), expected.str());
 }
 
-TEST(EmptyBuyRangeTest, OrderBboTestCase)
+TEST(OrderBboTestCase, EmptyBuyRangeTest)
 {
     OrderBbo::OrderRangeIterators buy_range;
     auto sell_range = orders_buy.equal_range(*(orders_buy.begin()));
@@ -116,7 +116,7 @@ TEST(EmptyBuyRangeTest, OrderBboTestCase)
     EXPECT_EQ(actual.str(), expected.str());
 }
 
-TEST(EmptySellRangeTest, OrderBboTestCase)
+TEST(OrderBboTestCase, EmptySellRangeTest)
 {
     auto buy_range = orders_buy.equal_range(*(orders_buy.begin()));
     OrderBbo::OrderRangeIterators sell_range;
@@ -144,7 +144,7 @@ TEST(EmptySellRangeTest, OrderBboTestCase)
     EXPECT_EQ(actual.str(), expected.str());
 }
 
-TEST(EmptyRangesTest, OrderBboTestCase)
+TEST(OrderBboTestCase, EmptyRangesTest)
 {
     OrderBbo::OrderRangeIterators buy_range;
     OrderBbo::OrderRangeIterators sell_range;

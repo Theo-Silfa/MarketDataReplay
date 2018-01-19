@@ -25,7 +25,7 @@ const double DEFAULT_PRICE = 72.82;
 
 /************************* OrderRequestTestCase ***********************/
 
-TEST(OperatorLessTest, OrderRequestTestCase)
+TEST(OrderRequestTestCase, OperatorLessTest)
 {
     OrderRequest lhs, rhs;
 
@@ -36,7 +36,7 @@ TEST(OperatorLessTest, OrderRequestTestCase)
     EXPECT_LT(lhs, rhs);
 }
 
-TEST(OperatorGreaterThanTest, OrderRequestTestCase)
+TEST(OrderRequestTestCase, OperatorGreaterThanTest)
 {
     OrderRequest lhs, rhs;
 
@@ -47,7 +47,7 @@ TEST(OperatorGreaterThanTest, OrderRequestTestCase)
     EXPECT_GT(lhs, rhs);
 }
 
-TEST(OperatorEqualTest, OrderRequestTestCase)
+TEST(OrderRequestTestCase, OperatorEqualTest)
 {
     OrderRequest lhs, rhs;
 
@@ -57,7 +57,7 @@ TEST(OperatorEqualTest, OrderRequestTestCase)
     EXPECT_EQ(lhs, rhs);
 }
 
-TEST(VwapOutStreamTest, OrderRequestTestCase)
+TEST(OrderRequestTestCase, VwapOutStreamTest)
 {
     stringstream actual, expected;
     OrderVwap obj = {DEFAULT_PRICE, DEFAULT_PRICE};

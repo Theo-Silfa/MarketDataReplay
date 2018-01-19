@@ -17,6 +17,6 @@ using namespace std;
 
 /**************************** BasicTestCase ***************************/
 
-TEST(EmptyTest, BasicTestCase)
+TEST(BasicTestCase, EmptyTest)
 {
 }
