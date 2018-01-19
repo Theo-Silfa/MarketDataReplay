@@ -10,18 +10,12 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <iomanip>
-#include <string>
 
 //Local includes
+#include "test_constants.hpp"
 #include "order_request.hpp"
 
 using namespace std;
-
-/******************************* Helpers ******************************/
-
-const uint64_t DEFAULT_ORDER_ID = 100;
-const uint64_t DEFAULT_QUANTITY = 10;
-const double DEFAULT_PRICE = 72.82;
 
 /************************* OrderRequestTestCase ***********************/
 
