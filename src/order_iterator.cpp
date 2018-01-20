@@ -18,34 +18,64 @@
 
 /*************************** OrderIterator ****************************/
 
-OrderIterator::OrderIterator(OrderSetIterator bid, OrderSetIterator ask) :
-    bid_itr_(bid), ask_itr_(ask)
+OrderIterator::OrderIterator(OrderSetGreaterPtr bid, OrderSetLessPtr ask) :
+    bid_(bid), ask_(ask), current_bid_(bid->begin()), current_ask_(ask->begin())
 {
 }
 
 void OrderIterator::first()
 {
-    return;
+    current_bid_ = bid_->begin();
+    current_ask_ = ask_->begin();
 }
 
 void OrderIterator::next()
 {
-    return;
+    DoneStatus status = done();
+
+    if(status != DoneStatus::BID_DONE)
+    {
+        ++current_bid_;
+    }
+
+    if(status != DoneStatus::ASK_DONE)
+    {
+        ++current_ask_;
+    }
 }
 
-bool OrderIterator::done()
+OrderIterator::DoneStatus OrderIterator::done()
 {
-    return false;
+    DoneStatus status;
+
+    if(current_bid_ == bid_->end() && current_ask_ == ask_->end())
+    {
+        status = DoneStatus::ALL_DONE;
+    }
+    else if(current_bid_ == bid_->end() && current_ask_ != ask_->end())
+    {
+        status = DoneStatus::BID_DONE;
+    }
+    else if(current_bid_ != bid_->end() && current_ask_ == ask_->end())
+    {
+        status = DoneStatus::ASK_DONE;
+    }
+    else
+    {
+        status = DoneStatus::NOT_DONE;
+    }
+
+    return status;
 }
 
 const OrderRequest & OrderIterator::getBid()
 {
-    return *(bid_itr_);
+    return *(current_bid_);
 }
 
 const OrderRequest & OrderIterator::getAsk()
 {
-    return *(ask_itr_);
+    return *(current_ask_);
 }
 
 

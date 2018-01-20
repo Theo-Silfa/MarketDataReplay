@@ -13,6 +13,7 @@
 #include <set>
 
 //Local includes
+#include "container_definitions.hpp"
 
 //Forward declarations
 struct OrderRequest;
@@ -26,15 +27,23 @@ using namespace std;
 class OrderIterator
 {
 public:
-    /** Multiset definition for the convinience */
+    /** Multiset iterator definition for the convinience */
     using OrderSetIterator = multiset<OrderRequest>::iterator;
+
+    enum DoneStatus
+    {
+        NOT_DONE,
+        BID_DONE,
+        ASK_DONE,
+        ALL_DONE
+    };
 
     /**
      * Constructor
-     * @param bid iterator to the "Buy" order
-     * @param ask iterator to the "Sell" order
+     * @param bid pointer to the "Buy" order table
+     * @param ask pointer to the "Sell" order table
      */
-    OrderIterator(OrderSetIterator bid, OrderSetIterator ask);
+    OrderIterator(OrderSetGreaterPtr bid, OrderSetLessPtr ask);
 
     /** Default destructor */
     ~OrderIterator() = default;
@@ -47,9 +56,9 @@ public:
 
     /**
      * Checks if the iterator have reached the end of the list
-     * @return true if end, false if not
+     * @return status of the traversal
      */
-    bool done();
+    DoneStatus done();
 
     /**
      * Get the current bid order for this iterator
@@ -64,11 +73,17 @@ public:
     const OrderRequest & getAsk();
 
 private:
-    /** Holds the iterator to the current "Buy" order */
-    OrderSetIterator bid_itr_;
+    /** Holds the pointer to the current "Buy" order table */
+    OrderSetGreaterPtr bid_;
 
-    /** Holds the iterator to the current "Sell" order */
-    OrderSetIterator ask_itr_;
+    /** Holds the pointer to the current "Sell" order table */
+    OrderSetLessPtr ask_;
+
+    /** Holds the multiset iterator to the current "Buy" order table */
+    OrderSetIterator current_bid_;
+
+    /** Holds the multiset iterator to the current "Sell" order table */
+    OrderSetIterator current_ask_;
 
     /** Deleted default constructor */
     OrderIterator() = delete;

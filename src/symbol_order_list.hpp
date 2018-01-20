@@ -16,6 +16,7 @@
 
 //Local includes
 #include "defines.h"
+#include "container_definitions.hpp"
 
 using namespace std;
 
@@ -101,10 +102,10 @@ public:
 
 protected:
     /** Holds the buy offers sorted by the price top to down */
-    multiset<OrderRequest, greater<OrderRequest>> orders_buy_;
+    OrderSetGreaterPtr orders_buy_;
 
     /** Holds the sell offers sorted by the price down to top */
-    multiset<OrderRequest, less<OrderRequest>> orders_sell_;
+    OrderSetLessPtr orders_sell_;
 
     /** Holds the total amount of shares in this object */
     uint64_t total_quantity_;

@@ -58,5 +58,5 @@ OrderVwap SymbolOrderList::vwap(uint64_t quantity)
 
 OrderIterator SymbolOrderList::getIterator()
 {
-    return OrderIterator(orders_buy_.begin(), orders_sell_.begin());
+    return OrderIterator(orders_buy_, orders_sell_);
 }
