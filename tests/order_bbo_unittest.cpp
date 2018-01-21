@@ -101,3 +101,18 @@ TEST(OrderBboTestCase, SellNilRangeTest)
 
     EXPECT_EQ(actual.str(), expected.str());
 }
+
+TEST(OrderBboTestCase, EqualityOperatorTest)
+{
+    OrderBbo bbo_lhs(bbo_buy_volume, bbo_buy_price, orders_in_buy_range,
+        bbo_sell_volume, bbo_sell_price, orders_in_sell_range);
+
+    OrderBbo bbo_rhs_eq(bbo_buy_volume, bbo_buy_price, orders_in_buy_range,
+        bbo_sell_volume, bbo_sell_price, orders_in_sell_range);
+
+    OrderBbo bbo_rhs_ne(bbo_buy_volume, bbo_buy_price, orders_in_buy_range + 5,
+        bbo_sell_volume, bbo_sell_price - 0.3, orders_in_sell_range * 2);
+
+    EXPECT_EQ(bbo_lhs, bbo_rhs_eq);
+    EXPECT_NE(bbo_lhs, bbo_rhs_ne);
+}

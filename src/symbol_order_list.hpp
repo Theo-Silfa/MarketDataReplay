@@ -27,6 +27,54 @@ class OrderBbo;
 class OrderIterator;
 
 /**
+ * Order process exception definition.
+ * Is thrown whenever where is a problem with add, modify or cancel of order.
+ */
+class OrderProcessException: public exception
+{
+public:
+    /**
+     * Constructor (C strings).
+     * @param message C-style string error message.
+     *                The string contents are copied upon construction.
+     *                Hence, responsibility for deleting the char* lies
+     *                with the caller.
+     */
+    explicit OrderProcessException(const char* message):
+        msg_(message)
+        {}
+
+    /**
+     * Constructor (C++ STL strings).
+     * @param message The error message.
+     */
+    explicit OrderProcessException(const string& message):
+        msg_(message)
+        {}
+
+    /**
+     * Destructor.
+     * Virtual to allow for subclassing.
+     */
+    virtual ~OrderProcessException() = default;
+
+    /**
+     * Returns a pointer to the (constant) error description.
+     * @return A pointer to a const char*. The underlying memory
+     *         is in posession of the Exception object. Callers must
+     *         not attempt to free the memory.
+     */
+    virtual const char* what() const noexcept
+    {
+       return msg_.c_str();
+    }
+
+protected:
+    /** Error message */
+    string msg_;
+};
+
+/**
  * Order List class. Only orders for specific symbol are held.
  * Automatically updates the BBO information upon the order
  * receival, modification or cancel.
@@ -106,6 +154,9 @@ protected:
 
     /** Holds the sell offers sorted by the price down to top */
     OrderSetLessPtr orders_sell_;
+
+    /** Holds the existing orders in this object */
+    OrderIdMap existing_orders_;
 
     /** Holds the total amount of shares in this object */
     uint64_t total_quantity_;

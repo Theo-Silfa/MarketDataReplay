@@ -55,6 +55,18 @@ ostream & operator<<(ostream & out, const OrderBbo & obj)
 
 /*************************** OrderBbo *********************************/
 
+OrderBbo::OrderBbo() :
+    buy_total_volume_(0),
+    buy_share_price_(0.0),
+    buy_order_count_(0),
+    sell_total_volume_(0),
+    sell_share_price_(0.0),
+    sell_order_count_(0),
+    nil_buy_(true),
+    nil_sell_(true)
+{
+}
+
 OrderBbo::OrderBbo(uint64_t buy_total_volume,
                    double buy_share_price,
                    uint32_t buy_order_count,
@@ -80,4 +92,84 @@ void OrderBbo::setBuyNil(bool state)
 void OrderBbo::setSellNil(bool state)
 {
     nil_sell_ = state;
+}
+
+void OrderBbo::setBuyTotalVolume(uint64_t volume)
+{
+    buy_total_volume_ = volume;
+}
+
+void OrderBbo::setBuySharePrice(double price)
+{
+    buy_share_price_ = price;
+}
+
+void OrderBbo::setBuyOrderCount(uint64_t count)
+{
+    buy_order_count_ = count;
+}
+
+void OrderBbo::setSellTotalVolume(uint64_t volume)
+{
+    sell_total_volume_ = volume;
+}
+
+void OrderBbo::setSellSharePrice(double price)
+{
+    sell_share_price_ = price;
+}
+
+void OrderBbo::setSellOrderCount(uint64_t count)
+{
+    sell_order_count_ = count;
+}
+
+uint64_t OrderBbo::getBuyTotalVolume()
+{
+    return buy_total_volume_;
+}
+
+double OrderBbo::getBuySharePrice()
+{
+    return buy_share_price_;
+}
+
+uint64_t OrderBbo::getBuyOrderCount()
+{
+    return buy_order_count_;
+}
+
+uint64_t OrderBbo::getSellTotalVolume()
+{
+    return sell_total_volume_;
+}
+
+double OrderBbo::getSellSharePrice()
+{
+    return sell_share_price_;
+}
+
+uint64_t OrderBbo::getSellOrderCount()
+{
+    return sell_order_count_;
+}
+
+auto OrderBbo::getTie() const
+{
+    return tie(buy_total_volume_,
+                buy_share_price_,
+                buy_order_count_,
+                sell_total_volume_,
+                sell_share_price_,
+                sell_order_count_);
+}
+
+bool OrderBbo::operator==(const OrderBbo &obj) const
+{
+    return this->getTie() == obj.getTie();
+}
+
+bool OrderBbo::operator!=(const OrderBbo &obj) const
+{
+    return this->getTie() != obj.getTie();
 }

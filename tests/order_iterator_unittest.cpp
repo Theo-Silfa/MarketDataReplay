@@ -17,6 +17,8 @@
 
 using namespace std;
 
+/****************************** Constants *****************************/
+
 auto orders_buy_ptr = make_shared<multiset<OrderRequest, greater<OrderRequest>>>(
         initializer_list<OrderRequest>{ order_one, order_two, order_three, order_four } );
 

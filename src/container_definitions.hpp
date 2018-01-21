@@ -9,6 +9,13 @@
 #ifndef _CONTAINERDEFINITIONS_H
 #define _CONTAINERDEFINITIONS_H
 
+//System includes
+#include <set>
+#include <unordered_map>
+#include <memory>
+
+//Local includes
+
 using namespace std;
 
 //Forward declarations
@@ -21,5 +28,8 @@ using OrderSetGreaterPtr = shared_ptr<multiset<OrderRequest, greater<OrderReques
 
 /** Multiset (less) pointer definition for the convinience */
 using OrderSetLessPtr = shared_ptr<multiset<OrderRequest, less<OrderRequest>>>;
+
+/** Set definition to take track on the existing order ids */
+using OrderIdMap = unordered_map<uint64_t, string>;
 
 #endif //_CONTAINERDEFINITIONS_H

@@ -11,6 +11,7 @@
 
 //System includes
 #include <ostream>
+#include <tuple>
 
 //Local includes
 
@@ -34,6 +35,9 @@ ostream & operator<<(ostream & out, const OrderBbo & obj);
 class OrderBbo final
 {
 public:
+    /** Default constructor */
+    OrderBbo();
+
     /**
      * Constructor
      * @param buy_total_volume cumulative volume for buy orders
@@ -59,8 +63,100 @@ public:
     /** Set nil state for sells */
     void setSellNil(bool state);
 
-        /** Friend definition for the out stream */
+    /**
+     * Sets the total volume for bids for this obj
+     * @param total volume for bids
+     */
+    void setBuyTotalVolume(uint64_t volume);
+
+    /**
+     * Sets the price for one buy share
+     * @param price for one share
+     */
+    void setBuySharePrice(double price);
+
+    /**
+     * Sets the buy order count with the same price level
+     * @param order count
+     */
+    void setBuyOrderCount(uint64_t count);
+
+    /**
+     * Sets the total volume for asks for this obj
+     * @param total volume for asks
+     */
+    void setSellTotalVolume(uint64_t volume);
+
+    /**
+     * Sets the price for one sell share
+     * @param price for one share
+     */
+    void setSellSharePrice(double price);
+
+    /**
+     * Sets the sell order count with the same price level
+     * @param order count
+     */
+    void setSellOrderCount(uint64_t count);
+
+    /**
+     * Returns the total volume for bids for this obj
+     * @return total volume for bids
+     */
+    uint64_t getBuyTotalVolume();
+
+    /**
+     * Returns the price for one buy share
+     * @return price for one share
+     */
+    double getBuySharePrice();
+
+    /**
+     * Returns the buy order count with the same price level
+     * @return order count
+     */
+    uint64_t getBuyOrderCount();
+
+    /**
+     * Returns the total volume for asks for this obj
+     * @return total volume for asks
+     */
+    uint64_t getSellTotalVolume();
+
+    /**
+     * Returns the price for one sell share
+     * @return price for one share
+     */
+    double getSellSharePrice();
+
+    /**
+     * Returns the sell order count with the same price level
+     * @return order count
+     */
+    uint64_t getSellOrderCount();
+
+    /**
+     * Packs all of the fields in to tie
+     * @return tie object
+     */
+    auto getTie() const;
+
+    /** Friend definition for the out stream */
     friend ostream & operator<<(ostream & os, const OrderBbo & obj);
+
+    /**
+     * Equality operator implementation for OrderBbo class
+     * @param obj object to compare with
+     * @return true if equal
+     */
+    bool operator==(const OrderBbo &obj) const;
+
+    /**
+     * Nonequality operator implementation for OrderBbo class
+     * @param obj object to compare with
+     * @return true if not equal
+     */
+    bool operator!=(const OrderBbo &obj) const;
 
 protected:
     /** Cumulative volume for buy orders */
@@ -86,9 +182,6 @@ protected:
 
     /** Flag to indicate if sell bbo is present */
     bool nil_sell_;
-
-    /** Deleted default constructor */
-    OrderBbo() = delete;
 };
 
 #endif //_ORDERBBO_H
