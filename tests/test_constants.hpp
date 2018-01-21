@@ -33,7 +33,7 @@ const OrderRequest order_three_dub = {202, 125, 72.79};
 const OrderRequest order_four      = {103, 100, 72.78};
 const OrderRequest order_four_dub  = {203, 125, 72.78};
 
-const int default_width = 8;
+const int default_width = 10;
 const int default_precision = 2;
 const string NIL = "NIL";
 

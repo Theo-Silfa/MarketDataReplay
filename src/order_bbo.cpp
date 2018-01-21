@@ -16,7 +16,7 @@
 
 /*************************** Helper Functions *************************/
 
-const int default_width = 8;
+const int default_width = 10;
 const int default_precision = 2;
 const string NIL = "NIL";
 

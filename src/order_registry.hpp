@@ -21,6 +21,7 @@ using namespace std;
 
 /** Convinience definitions */
 using OrdersActiveMap = unordered_map<uint64_t, string>;
+using SymbolToOrdersMap = unordered_map<string, unique_ptr<SymbolOrderList>>;
 
 /**
  * Order registry class. Implemented as singleton. Is used to hold
@@ -49,12 +50,20 @@ public:
      */
     OrdersActiveMap & getOrdersActive();
 
+    /**
+     * Is used to get the map of current active symbol to order connections
+     * @return current map of the symbol to order connections
+     */
+    SymbolToOrdersMap & getSymbolToOrdersBind();
+
 private:
     /** Default constructor */
     OrderRegistry() = default;
 
-    /** Current active orders */
+    /** Current active orders. Key is an order id, value is a symbol */
     OrdersActiveMap orders_active_;
+
+    SymbolToOrdersMap symbol_to_orders_bind_;
 
     PREVENT_COPY(OrderRegistry);
     PREVENT_MOVE(OrderRegistry);

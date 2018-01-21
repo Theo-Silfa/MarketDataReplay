@@ -19,3 +19,8 @@ OrdersActiveMap & OrderRegistry::getOrdersActive()
 {
     return orders_active_;
 }
+
+SymbolToOrdersMap & OrderRegistry::getSymbolToOrdersBind()
+{
+    return symbol_to_orders_bind_;
+}
