@@ -10,6 +10,7 @@
 
 //System includes
 #include <set>
+#include <map>
 #include <iostream>
 #include <iomanip>
 
@@ -257,21 +258,44 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
         {
             //This symbol is registered
 
-            // format for pair: <volume>@<price>
-            vector<pair<uint64_t, double>> bid_price_levels;
-            vector<pair<uint64_t, double>> ask_price_levels;
+            //format for map: price is a key, value is a volume
+            map<double, uint64_t, greater<double>> bid_price_levels;
+            map<double, uint64_t, less<double>> ask_price_levels;
 
-            //TODO: Populate price levels
+            for (auto itr = search->second->getIterator();
+                 itr.done() != OrderIterator::ALL_DONE;
+                 itr.next())
+            {
+                auto done_status = itr.done();
+
+                if(done_status != OrderIterator::BID_DONE)
+                {
+                    const auto &bid_order = itr.getBid();
+                    bid_price_levels[bid_order.price] += bid_order.quantity;
+                }
+
+                if(done_status != OrderIterator::ASK_DONE)
+                {
+                    const auto &ask_order = itr.getAsk();
+                    ask_price_levels[ask_order.price] += ask_order.quantity;
+                }
+            }
 
             auto bid_itr = bid_price_levels.begin();
             auto ask_itr = ask_price_levels.begin();
 
-            while (bid_itr != bid_price_levels.end() && ask_itr != ask_price_levels.end())
+            //Output format is:
+            //Bid                             Ask
+            //<volume>@<price> | <volume>@<price>
+
+            cout << "|Bid      |       Ask| <--" << symbol_to_print << '\n';
+
+            while (bid_itr != bid_price_levels.end() || ask_itr != ask_price_levels.end())
             {
                 if(bid_itr != bid_price_levels.end())
                 {
-                    cout << '<' << bid_itr->first
-                         << '@' << bid_itr->second
+                    cout << '<' << bid_itr->second
+                         << '@' << fixed << setprecision(default_precision) << bid_itr->first
                          << '>';
                     bid_itr++;
                 }
@@ -286,8 +310,8 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
 
                 if(ask_itr != ask_price_levels.end())
                 {
-                    cout << '<' << ask_itr->first
-                         << '@' << ask_itr->second
+                    cout << '<' << ask_itr->second
+                         << '@' << fixed << setprecision(default_precision) << ask_itr->first
                          << '>' << '\n';
                     ask_itr++;
                 }
@@ -298,6 +322,8 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
                          << '>' << '\n';
                 }
             }
+
+            cout << '\n';
         }
         else
         {
