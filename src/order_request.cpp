@@ -31,6 +31,25 @@ bool operator==(const OrderRequest &lhs, const OrderRequest &rhs)
 
 ostream & operator<<(ostream &out, const OrderVwap &obj)
 {
-    return out << '<' << fixed << setprecision(2) << obj.buy_price << ','
-        << fixed << setprecision(2) << obj.sell_price << '>';
+    if (obj.buy_price != 0.0)
+    {
+        out << '<' << fixed << setprecision(2) << obj.buy_price;
+    }
+    else
+    {
+        out << '<' << fixed << setprecision(2) << "NIL";
+    }
+
+    out << ',';
+
+    if (obj.sell_price != 0.0)
+    {
+        out << fixed << setprecision(2) << obj.sell_price << '>';
+    }
+    else
+    {
+        out << fixed << setprecision(2) << "NIL" << '>';
+    }
+
+    return out;
 }

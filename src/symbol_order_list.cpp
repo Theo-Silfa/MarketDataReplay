@@ -282,11 +282,9 @@ OrderVwap SymbolOrderList::vwap(uint64_t quantity)
         throw OrderProcessException("Can't calculate vwap for zero quantity");
     }
 
-    auto total_quantity = totalQuantity();
-
-    if (quantity > total_quantity && total_quantity != 0)
+    if (quantity > totalQuantity())
     {
-        throw OrderProcessException("There is not enought shares to cover the requested quantity");
+        return {0.0, 0.0};
     }
 
     double buy_vwap = 0, sell_vwap = 0;

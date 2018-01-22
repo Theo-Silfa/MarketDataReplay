@@ -351,8 +351,12 @@ TEST(SymbolOrderListTestCase, TooMuchQuantityOrderVwapTest)
     AddOrders("Sell", 1000);
 
     uint64_t demanded_quantity = numeric_limits<uint64_t>::max();
+    double expected_bid_vwap = 0.0;
+    double expected_ask_vwap = 0.0;
 
-    EXPECT_THROW(order_list.vwap(demanded_quantity), OrderProcessException);
+    OrderVwap actual_vwap = order_list.vwap(demanded_quantity);
+    EXPECT_EQ(expected_bid_vwap, actual_vwap.buy_price);
+    EXPECT_EQ(expected_ask_vwap, actual_vwap.sell_price);
 }
 
 TEST(SymbolOrderListTestCase, EmptyListOrderVwapTest)
