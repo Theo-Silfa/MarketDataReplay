@@ -35,6 +35,10 @@ const string NIL = "NIL";
 /** Default output precision */
 const int default_precision = 2;
 
+/**
+* This function performs the actual bbo print upon the add, modify or cancel commands
+* @param symbol to search for subscriptions
+*/
 void PrintBboInfo(const string &symbol)
 {
     auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
@@ -72,6 +76,55 @@ void PrintBboInfo(const string &symbol)
     else
     {
         //There are no subscribers for this symbol. Do nothing
+        return;
+    }
+}
+
+/**
+* This function performs the actual vwap print upon the add, modify or cancel commands
+* @param symbol to search for subscriptions
+*/
+void PrintVwapInfo(const string &symbol)
+{
+    try
+    {
+        auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
+
+        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+
+        auto search = symbol_to_orders.find(symbol);
+
+        if (search != symbol_to_orders.end())
+        {
+            for (const auto & vwap_info : vwap_subscribers[symbol])
+            {
+                if (vwap_info.second > 0)
+                {
+                    //We have subscribers for this quantity
+
+                    auto vwap = search->second->vwap(vwap_info.first);
+
+                    cout << "<buy price, sell price> <-- " << symbol << " VWAP" << '\n';
+                    cout << vwap << '\n' << '\n';
+                }
+                else
+                {
+                    //There are no subscribers for this quantity. Move to the next one
+                    continue;
+                }
+            }
+        }
+        else
+        {
+            cout << "PrintVwapInfo(): Can't find order list associated with this symbol: ["
+                << symbol << "]. Skipping printing vwap info." << '\n';
+            return;
+        }
+    }
+    catch (OrderProcessException &e)
+    {
+        cerr << "PrintVwapInfo(): OrderProcessException: [" << string(e.what())
+            << "]" << '\n';
         return;
     }
 }
@@ -128,6 +181,7 @@ void ProcessOrderAdd(const CommandTokenizer &tokens, const string &symbol_to_fil
         if (symbol_to_filter == symbol || symbol_to_filter.empty())
         {
             PrintBboInfo(symbol);
+            PrintVwapInfo(symbol);
         }
     }
     catch (logic_error &e)
@@ -181,6 +235,7 @@ void ProcessOrderModify(const CommandTokenizer &tokens, const string &symbol_to_
             if (symbol_to_filter == symbol || symbol_to_filter.empty())
             {
                 PrintBboInfo(symbol);
+                PrintVwapInfo(symbol);
             }
         }
         else
@@ -239,6 +294,7 @@ void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_
             if (symbol_to_filter == symbol || symbol_to_filter.empty())
             {
                 PrintBboInfo(symbol);
+                PrintVwapInfo(symbol);
             }
         }
         else
@@ -286,11 +342,11 @@ void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
  */
 void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
 {
-    string symbol_to_print = tokens[CommandTokenizer::BBO_SYMBOL];
+    string symbol = tokens[CommandTokenizer::BBO_SYMBOL];
 
     auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
 
-    auto & subscriber_count = bbo_subscribers[symbol_to_print];
+    auto & subscriber_count = bbo_subscribers[symbol];
 
     if (subscriber_count > 0)
     {
@@ -308,14 +364,58 @@ void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
  * @param tokens for VWAP command
  * @param symbol to be shown in output
  */
-void ProcessSubscribeVwap(const CommandTokenizer &tokens, const string &symbol_to_filter) {}
+void ProcessSubscribeVwap(const CommandTokenizer &tokens, const string &)
+{
+    try
+    {
+        string symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
+        uint64_t quantity = stoull(tokens[CommandTokenizer::VWAP_QUANTITY]);
+
+        auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
+
+        ++vwap_subscribers[symbol][quantity];
+    }
+    catch (logic_error &e)
+    {
+        cerr << "ProcessSubscribeVwap(): Bad attempt to convert string. Exception: ["
+            << string(e.what()) << "]" << '\n';
+        return;
+    }
+}
 
 /**
  * This function implements Unsubscribe Vwap command
  * @param tokens for VWAP command
  * @param symbol to be shown in output
  */
-void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &symbol_to_filter) {}
+void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
+{
+    try
+    {
+        string symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
+        uint64_t quantity = stoull(tokens[CommandTokenizer::VWAP_QUANTITY]);
+
+        auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
+
+        auto & subscriber_count = vwap_subscribers[symbol][quantity];
+
+        if (subscriber_count > 0)
+        {
+            --subscriber_count;
+        }
+        else
+        {
+            //Do nothing. We are not subscribed to anyone here
+            return;
+        }
+    }
+    catch (logic_error &e)
+    {
+        cerr << "ProcessSubscribeVwap(): Bad attempt to convert string. Exception: ["
+            << string(e.what()) << "]" << '\n';
+        return;
+    }
+}
 
 /**
  * This function implements Print command
@@ -370,7 +470,7 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
         //Bid                             Ask
         //<volume>@<price> | <volume>@<price>
 
-        cout << "|Bid      |       Ask| <--" << symbol_to_print << " PRINT" << '\n';
+        cout << "|Bid      |       Ask| <-- " << symbol_to_print << " PRINT" << '\n';
 
         while (bid_itr != bid_price_levels.end() || ask_itr != ask_price_levels.end())
         {

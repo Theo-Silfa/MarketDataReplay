@@ -29,3 +29,8 @@ BboSubscribersMap & OrderRegistry::getBboSubscribers()
 {
     return bbo_subscribers_;
 }
+
+VwapSubscribersMap & OrderRegistry::getVwapSubscribers()
+{
+    return vwap_subscribers_;
+}

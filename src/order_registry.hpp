@@ -11,6 +11,7 @@
 
 //System includes
 #include <unordered_map>
+#include <map>
 #include <string>
 
 //Local includes
@@ -23,6 +24,7 @@ using namespace std;
 using OrdersActiveMap = unordered_map<uint64_t, string>;
 using SymbolToOrdersMap = unordered_map<string, unique_ptr<SymbolOrderList>>;
 using BboSubscribersMap = unordered_map<string, uint32_t>;
+using VwapSubscribersMap = unordered_map<string, map<uint64_t, uint32_t>>;
 
 /**
  * Order registry class. Implemented as singleton. Is used to hold
@@ -58,10 +60,16 @@ public:
     SymbolToOrdersMap & getSymbolToOrdersBind();
 
     /**
-    * Is used to get the map of current active symbol to order connections
-    * @return current map of the symbol to order connections
+    * Is used to get the map of current bbo subscribers
+    * @return current map of the bbo subscribers
     */
     BboSubscribersMap & getBboSubscribers();
+
+    /**
+    * Is used to get the map of current vwap subscribers
+    * @return current map of the vwap subscribers
+    */
+    VwapSubscribersMap & getVwapSubscribers();
 
 private:
     /** Default constructor */
@@ -73,8 +81,14 @@ private:
     /** Current bindings of the symbols to the existing orders */
     SymbolToOrdersMap symbol_to_orders_bind_;
 
-    /** Current bbo subscribers map */
+    /** Current bbo subscribers map. Key is a symbol, value is a subscriber counter */
     BboSubscribersMap bbo_subscribers_;
+
+    /**
+    * Current vwap subscribers map. Key is a symbol, value is a
+    * map with quantity as a key and subscriber counter as a value
+    */
+    VwapSubscribersMap vwap_subscribers_;
 
     PREVENT_COPY(OrderRegistry);
     PREVENT_MOVE(OrderRegistry);
