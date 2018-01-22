@@ -68,7 +68,7 @@ void ProcessOrderAdd(const CommandTokenizer &tokens)
         else
         {
             //This symbol is not registered. Need to add it
-            auto added_symbol = symbol_to_orders.insert({symbol, make_unique<SymbolOrderList>(symbol)});
+            auto added_symbol = symbol_to_orders.insert(make_pair(symbol, make_unique<SymbolOrderList>(symbol)));
 
             if(!added_symbol.second)
             {

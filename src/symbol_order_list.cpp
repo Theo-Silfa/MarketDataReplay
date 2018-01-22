@@ -11,6 +11,7 @@
 //System includes
 #include <iostream>
 #include <cstdlib>
+#include <algorithm>
 
 //Local includes
 #include "order_iterator.hpp"
