@@ -62,3 +62,39 @@ TEST(OrderRequestTestCase, VwapOutStreamTest)
 
     EXPECT_EQ(actual.str(), expected.str());
 }
+
+TEST(OrderRequestTestCase, VwapOutStreamBuyNilTest)
+{
+    stringstream actual, expected;
+    OrderVwap obj = {0.0, DEFAULT_PRICE};
+
+    actual << obj;
+    expected << '<' << fixed << setprecision(2) << NIL << ','
+        << fixed << setprecision(2) << DEFAULT_PRICE << '>';
+
+    EXPECT_EQ(actual.str(), expected.str());
+}
+
+TEST(OrderRequestTestCase, VwapOutStreamSellNilTest)
+{
+    stringstream actual, expected;
+    OrderVwap obj = {DEFAULT_PRICE, 0.0};
+
+    actual << obj;
+    expected << '<' << fixed << setprecision(2) << DEFAULT_PRICE << ','
+        << fixed << setprecision(2) << NIL << '>';
+
+    EXPECT_EQ(actual.str(), expected.str());
+}
+
+TEST(OrderRequestTestCase, VwapOutStreamNilTest)
+{
+    stringstream actual, expected;
+    OrderVwap obj = {0.0, 0.0};
+
+    actual << obj;
+    expected << '<' << fixed << setprecision(2) << NIL << ','
+        << fixed << setprecision(2) << NIL << '>';
+
+    EXPECT_EQ(actual.str(), expected.str());
+}
