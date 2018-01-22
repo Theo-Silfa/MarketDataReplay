@@ -65,7 +65,7 @@ void OrderCheckAssertion(const uint64_t &order_id,
 void PutTogetherBbo(const pair<multiset<OrderRequest>::iterator, multiset<OrderRequest>::iterator> &range,
                     uint64_t &bbo_volume,
                     double &bbo_price,
-                    uint64_t &orders_in_range)
+                    uint32_t &orders_in_range)
 {
     for_each(range.first, range.second,
         [&bbo_volume](const OrderRequest& obj){ bbo_volume += obj.quantity; });
@@ -244,7 +244,7 @@ OrderBbo SymbolOrderList::bbo()
 
     uint64_t bbo_volume = 0;
     double bbo_price = 0;
-    uint64_t orders_in_range = 0;
+    uint32_t orders_in_range = 0;
 
     if (!orders_buy_->empty())
     {

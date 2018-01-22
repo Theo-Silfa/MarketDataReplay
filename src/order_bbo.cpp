@@ -105,7 +105,7 @@ void OrderBbo::setBuySharePrice(double price)
     buy_share_price_ = price;
 }
 
-void OrderBbo::setBuyOrderCount(uint64_t count)
+void OrderBbo::setBuyOrderCount(uint32_t count)
 {
     buy_order_count_ = count;
 }
@@ -120,7 +120,7 @@ void OrderBbo::setSellSharePrice(double price)
     sell_share_price_ = price;
 }
 
-void OrderBbo::setSellOrderCount(uint64_t count)
+void OrderBbo::setSellOrderCount(uint32_t count)
 {
     sell_order_count_ = count;
 }

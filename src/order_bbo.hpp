@@ -79,7 +79,7 @@ public:
      * Sets the buy order count with the same price level
      * @param order count
      */
-    void setBuyOrderCount(uint64_t count);
+    void setBuyOrderCount(uint32_t count);
 
     /**
      * Sets the total volume for asks for this obj
@@ -97,7 +97,7 @@ public:
      * Sets the sell order count with the same price level
      * @param order count
      */
-    void setSellOrderCount(uint64_t count);
+    void setSellOrderCount(uint32_t count);
 
     /**
      * Returns the total volume for bids for this obj
