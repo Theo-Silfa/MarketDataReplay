@@ -24,3 +24,8 @@ SymbolToOrdersMap & OrderRegistry::getSymbolToOrdersBind()
 {
     return symbol_to_orders_bind_;
 }
+
+BboSubscribersMap & OrderRegistry::getBboSubscribers()
+{
+    return bbo_subscribers_;
+}

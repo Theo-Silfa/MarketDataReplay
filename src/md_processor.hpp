@@ -60,7 +60,7 @@ public:
 
 protected:
     /** Token handler definition */
-    using MdHandler = function<void(const CommandTokenizer &)>;
+    using MdHandler = function<void(const CommandTokenizer &, const string &)>;
 
     /** Handler map definition */
     using MdHandlerMap = unordered_map<string, MdHandler>;

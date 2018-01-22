@@ -18,6 +18,7 @@
 #include "order_registry.hpp"
 #include "order_iterator.hpp"
 #include "order_request.hpp"
+#include "order_bbo.hpp"
 
 using namespace md::processors;
 
@@ -34,11 +35,52 @@ const string NIL = "NIL";
 /** Default output precision */
 const int default_precision = 2;
 
+void PrintBboInfo(const string &symbol)
+{
+    auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
+
+    if (bbo_subscribers[symbol] > 0)
+    {
+        //We have subscribers for this symbol
+
+        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+
+        auto search = symbol_to_orders.find(symbol);
+
+        if (search != symbol_to_orders.end())
+        {
+            //This symbol is registered
+            auto bbo = search->second->bbo();
+
+            cout << '|' << setw(default_width) << "#orders"
+                << '|' << setw(default_width) << "quantity"
+                << '|' << setw(default_width) << "bid price"
+                << '|' << setw(default_width) << "ask price"
+                << '|' << setw(default_width) << "quantity"
+                << '|' << setw(default_width) << "#orders"
+                << '|' << " <-- " << symbol << " BBO" << '\n';
+
+            cout << bbo << '\n' << '\n';
+        }
+        else
+        {
+            cout << "PrintBboInfo(): Can't find order list associated with this symbol: ["
+                << symbol <<"]. Skipping printing bbo info." << '\n';
+            return;
+        }
+    }
+    else
+    {
+        //There are no subscribers for this symbol. Do nothing
+        return;
+    }
+}
+
 /**
  * This function implements Order Add command
  * @param tokens for OA command
  */
-void ProcessOrderAdd(const CommandTokenizer &tokens)
+void ProcessOrderAdd(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
     try
     {
@@ -81,6 +123,12 @@ void ProcessOrderAdd(const CommandTokenizer &tokens)
         }
 
         orders_active.insert({order_id, symbol});
+
+        //Now once we have added a new order, let's print it's updated bbo and vwap
+        if (symbol_to_filter == symbol || symbol_to_filter.empty())
+        {
+            PrintBboInfo(symbol);
+        }
     }
     catch (logic_error &e)
     {
@@ -100,7 +148,7 @@ void ProcessOrderAdd(const CommandTokenizer &tokens)
  * This function implements Order Modify command
  * @param tokens for OM command
  */
-void ProcessOrderModify(const CommandTokenizer &tokens)
+void ProcessOrderModify(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
     try
     {
@@ -128,6 +176,12 @@ void ProcessOrderModify(const CommandTokenizer &tokens)
         {
             //This symbol is registered
             search->second->modify(order_id, quantity, price);
+
+            //Now once we have modified an order, let's print it's updated bbo and vwap
+            if (symbol_to_filter == symbol || symbol_to_filter.empty())
+            {
+                PrintBboInfo(symbol);
+            }
         }
         else
         {
@@ -154,7 +208,7 @@ void ProcessOrderModify(const CommandTokenizer &tokens)
  * This function implements Order Cancel command
  * @param tokens for OC command
  */
-void ProcessOrderCancel(const CommandTokenizer &tokens)
+void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
     try
     {
@@ -180,6 +234,12 @@ void ProcessOrderCancel(const CommandTokenizer &tokens)
         {
             //This symbol is registered
             search->second->cancel(order_id);
+
+            //Now once we have canceled an order, let's print it's updated bbo and vwap
+            if (symbol_to_filter == symbol || symbol_to_filter.empty())
+            {
+                PrintBboInfo(symbol);
+            }
         }
         else
         {
@@ -210,14 +270,38 @@ void ProcessOrderCancel(const CommandTokenizer &tokens)
  * @param tokens for BBO command
  * @param symbol to be shown in output
  */
-void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &symbol_to_filter) {}
+void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
+{
+    string symbol_to_print = tokens[CommandTokenizer::BBO_SYMBOL];
+
+    auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
+
+    ++bbo_subscribers[symbol_to_print];
+}
 
 /**
  * This function implements Unsubscribe Bbo command
  * @param tokens for BBO command
  * @param symbol to be shown in output
  */
-void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &symbol_to_filter) {}
+void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
+{
+    string symbol_to_print = tokens[CommandTokenizer::BBO_SYMBOL];
+
+    auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
+
+    auto & subscriber_count = bbo_subscribers[symbol_to_print];
+
+    if (subscriber_count > 0)
+    {
+        --subscriber_count;
+    }
+    else
+    {
+        //Do nothing. We are not subscribed to anyone here
+        return;
+    }
+}
 
 /**
  * This function implements Subscribe Vwap command
@@ -240,101 +324,92 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &symbol
  */
 void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
-    try
+    string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
+
+    if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
     {
-        string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
-
-        if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
-        {
-            //Filtered out by the user
-            return;
-        }
-
-        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
-
-        auto search = symbol_to_orders.find(symbol_to_print);
-
-        if (search != symbol_to_orders.end())
-        {
-            //This symbol is registered
-
-            //format for map: price is a key, value is a volume
-            map<double, uint64_t, greater<double>> bid_price_levels;
-            map<double, uint64_t, less<double>> ask_price_levels;
-
-            for (auto itr = search->second->getIterator();
-                 itr.done() != OrderIterator::ALL_DONE;
-                 itr.next())
-            {
-                auto done_status = itr.done();
-
-                if(done_status != OrderIterator::BID_DONE)
-                {
-                    const auto &bid_order = itr.getBid();
-                    bid_price_levels[bid_order.price] += bid_order.quantity;
-                }
-
-                if(done_status != OrderIterator::ASK_DONE)
-                {
-                    const auto &ask_order = itr.getAsk();
-                    ask_price_levels[ask_order.price] += ask_order.quantity;
-                }
-            }
-
-            auto bid_itr = bid_price_levels.begin();
-            auto ask_itr = ask_price_levels.begin();
-
-            //Output format is:
-            //Bid                             Ask
-            //<volume>@<price> | <volume>@<price>
-
-            cout << "|Bid      |       Ask| <--" << symbol_to_print << '\n';
-
-            while (bid_itr != bid_price_levels.end() || ask_itr != ask_price_levels.end())
-            {
-                if(bid_itr != bid_price_levels.end())
-                {
-                    cout << '<' << bid_itr->second
-                         << '@' << fixed << setprecision(default_precision) << bid_itr->first
-                         << '>';
-                    bid_itr++;
-                }
-                else
-                {
-                    cout << '<' << NIL
-                         << '@' << NIL
-                         << '>';
-                }
-
-                cout << '|';
-
-                if(ask_itr != ask_price_levels.end())
-                {
-                    cout << '<' << ask_itr->second
-                         << '@' << fixed << setprecision(default_precision) << ask_itr->first
-                         << '>' << '\n';
-                    ask_itr++;
-                }
-                else
-                {
-                    cout << '<' << NIL
-                         << '@' << NIL
-                         << '>' << '\n';
-                }
-            }
-
-            cout << '\n';
-        }
-        else
-        {
-            cout << "ProcessPrint(): Can't find symbol [" << symbol_to_print << "]" << '\n';
-            return;
-        }
+        //Filtered out by the user
+        return;
     }
-    catch (logic_error &e)
+
+    auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+
+    auto search = symbol_to_orders.find(symbol_to_print);
+
+    if (search != symbol_to_orders.end())
     {
-        cerr << "ProcessPrint(): Bad attempt to convert string. Exception: ["
-        << string(e.what()) << "]" << '\n';
+        //This symbol is registered
+
+        //format for map: price is a key, value is a volume
+        map<double, uint64_t, greater<double>> bid_price_levels;
+        map<double, uint64_t, less<double>> ask_price_levels;
+
+        for (auto itr = search->second->getIterator();
+                itr.done() != OrderIterator::ALL_DONE;
+                itr.next())
+        {
+            auto done_status = itr.done();
+
+            if(done_status != OrderIterator::BID_DONE)
+            {
+                const auto &bid_order = itr.getBid();
+                bid_price_levels[bid_order.price] += bid_order.quantity;
+            }
+
+            if(done_status != OrderIterator::ASK_DONE)
+            {
+                const auto &ask_order = itr.getAsk();
+                ask_price_levels[ask_order.price] += ask_order.quantity;
+            }
+        }
+
+        auto bid_itr = bid_price_levels.begin();
+        auto ask_itr = ask_price_levels.begin();
+
+        //Output format is:
+        //Bid                             Ask
+        //<volume>@<price> | <volume>@<price>
+
+        cout << "|Bid      |       Ask| <--" << symbol_to_print << " PRINT" << '\n';
+
+        while (bid_itr != bid_price_levels.end() || ask_itr != ask_price_levels.end())
+        {
+            if(bid_itr != bid_price_levels.end())
+            {
+                cout << '<' << bid_itr->second
+                        << '@' << fixed << setprecision(default_precision) << bid_itr->first
+                        << '>';
+                bid_itr++;
+            }
+            else
+            {
+                cout << '<' << NIL
+                        << '@' << NIL
+                        << '>';
+            }
+
+            cout << '|';
+
+            if(ask_itr != ask_price_levels.end())
+            {
+                cout << '<' << ask_itr->second
+                        << '@' << fixed << setprecision(default_precision) << ask_itr->first
+                        << '>' << '\n';
+                ask_itr++;
+            }
+            else
+            {
+                cout << '<' << NIL
+                        << '@' << NIL
+                        << '>' << '\n';
+            }
+        }
+
+        cout << '\n';
+    }
+    else
+    {
+        cout << "ProcessPrint(): Can't find symbol [" << symbol_to_print << "]" << '\n';
         return;
     }
 }
@@ -346,83 +421,74 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
  */
 void ProcessPrintFull(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
-    try
+    string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
+
+    if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
     {
-        string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
+        //Filtered out by the user
+        return;
+    }
 
-        if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
+    auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+
+    auto search = symbol_to_orders.find(symbol_to_print);
+
+    if (search != symbol_to_orders.end())
+    {
+        //This symbol is registered
+
+        cout << '|' << setw(default_width) << "order id"
+                << '|' << setw(default_width) << "quantity"
+                << '|' << setw(default_width) << "bid price"
+                << '|' << setw(default_width) << "ask price"
+                << '|' << setw(default_width) << "quantity"
+                << '|' << setw(default_width) << "order id"
+                << '|' << " <-- " << symbol_to_print << " PRINT_FULL" <<'\n';
+
+        for (auto itr = search->second->getIterator();
+                itr.done() != OrderIterator::ALL_DONE;
+                itr.next())
         {
-            //Filtered out by the user
-            return;
-        }
+            auto DoneStatus = itr.done();
 
-        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
-
-        auto search = symbol_to_orders.find(symbol_to_print);
-
-        if (search != symbol_to_orders.end())
-        {
-            //This symbol is registered
-
-            cout << '|' << setw(default_width) << "order id"
-                 << '|' << setw(default_width) << "quantity"
-                 << '|' << setw(default_width) << "bid price"
-                 << '|' << setw(default_width) << "ask price"
-                 << '|' << setw(default_width) << "quantity"
-                 << '|' << setw(default_width) << "order id"
-                 << '|' << " <-- " << symbol_to_print <<'\n';
-
-            for (auto itr = search->second->getIterator();
-                 itr.done() != OrderIterator::ALL_DONE;
-                 itr.next())
+            if(DoneStatus != OrderIterator::BID_DONE)
             {
-                auto DoneStatus = itr.done();
+                const auto &bid_order = itr.getBid();
 
-                if(DoneStatus != OrderIterator::BID_DONE)
-                {
-                    const auto &bid_order = itr.getBid();
-
-                    cout << '|' << setw(default_width) << bid_order.order_id
-                         << '|' << setw(default_width) << bid_order.quantity
-                         << '|' << setw(default_width) << fixed << setprecision(default_precision) << bid_order.price;
-                }
-                else
-                {
-                    cout << '|' << setw(default_width) << NIL
-                         << '|' << setw(default_width) << NIL
-                         << '|' << setw(default_width) << NIL;
-                }
-
-                if(DoneStatus != OrderIterator::ASK_DONE)
-                {
-                    const auto &ask_order = itr.getAsk();
-
-                    cout << '|' << setw(default_width) << fixed << setprecision(default_precision) << ask_order.price
-                         << '|' << setw(default_width) << ask_order.quantity
-                         << '|' << setw(default_width) << ask_order.order_id
-                         << '|' << '\n';
-                }
-                else
-                {
-                    cout << '|' << setw(default_width) << NIL
-                         << '|' << setw(default_width) << NIL
-                         << '|' << setw(default_width) << NIL
-                         << '|' << '\n';
-                }
+                cout << '|' << setw(default_width) << bid_order.order_id
+                        << '|' << setw(default_width) << bid_order.quantity
+                        << '|' << setw(default_width) << fixed << setprecision(default_precision) << bid_order.price;
+            }
+            else
+            {
+                cout << '|' << setw(default_width) << NIL
+                        << '|' << setw(default_width) << NIL
+                        << '|' << setw(default_width) << NIL;
             }
 
-            cout << '\n';
+            if(DoneStatus != OrderIterator::ASK_DONE)
+            {
+                const auto &ask_order = itr.getAsk();
+
+                cout << '|' << setw(default_width) << fixed << setprecision(default_precision) << ask_order.price
+                        << '|' << setw(default_width) << ask_order.quantity
+                        << '|' << setw(default_width) << ask_order.order_id
+                        << '|' << '\n';
+            }
+            else
+            {
+                cout << '|' << setw(default_width) << NIL
+                        << '|' << setw(default_width) << NIL
+                        << '|' << setw(default_width) << NIL
+                        << '|' << '\n';
+            }
         }
-        else
-        {
-            cout << "ProcessPrintFull(): Can't find symbol [" << symbol_to_print << "]" << '\n';
-            return;
-        }
+
+        cout << '\n';
     }
-    catch (logic_error &e)
+    else
     {
-        cerr << "ProcessPrintFull(): Bad attempt to convert string. Exception: ["
-        << string(e.what()) << "]" << '\n';
+        cout << "ProcessPrintFull(): Can't find symbol [" << symbol_to_print << "]" << '\n';
         return;
     }
 }
@@ -437,12 +503,12 @@ MdProcessor::MdProcessor() :
         { "ORDER ADD", ProcessOrderAdd },
         { "ORDER MODIFY", ProcessOrderModify },
         { "ORDER CANCEL", ProcessOrderCancel },
-        { "SUBSCRIBE BBO", bind(ProcessSubscribeBbo, placeholders::_1, cref(getFilter()))},
-        { "UNSUBSCRIBE BBO", bind(ProcessUnsubscribeBbo, placeholders::_1, cref(getFilter()))},
-        { "SUBSCRIBE VWAP", bind(ProcessSubscribeVwap, placeholders::_1, cref(getFilter()))},
-        { "UNSUBSCRIBE VWAP", bind(ProcessUnsubscribeVwap, placeholders::_1, cref(getFilter()))},
-        { "PRINT", bind(ProcessPrint, placeholders::_1, cref(getFilter()))},
-        { "PRINT_FULL", bind(ProcessPrintFull, placeholders::_1, cref(getFilter()))}
+        { "SUBSCRIBE BBO", ProcessSubscribeBbo },
+        { "UNSUBSCRIBE BBO", ProcessUnsubscribeBbo },
+        { "SUBSCRIBE VWAP", ProcessSubscribeVwap },
+        { "UNSUBSCRIBE VWAP", ProcessUnsubscribeVwap },
+        { "PRINT", ProcessPrint },
+        { "PRINT_FULL", ProcessPrintFull }
     }
 {
 }
@@ -462,7 +528,7 @@ void MdProcessor::process(const CommandTokenizer &tokens)
     try
     {
         auto key = tokens[CommandTokenizer::COMMAND_NAME];
-        handlers_.at(key)(tokens);
+        handlers_.at(key)(tokens, getFilter());
     }
     catch (out_of_range &e)
     {
