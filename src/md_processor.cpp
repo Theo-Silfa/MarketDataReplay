@@ -104,7 +104,8 @@ void PrintVwapInfo(const string &symbol)
 
                     auto vwap = search->second->vwap(vwap_info.first);
 
-                    cout << "<buy price, sell price> <-- " << symbol << " VWAP" << '\n';
+                    cout << "<buy price, sell price> <-- " << symbol <<
+                        " VWAP(" << vwap_info.first << ")" << '\n';
                     cout << vwap << '\n' << '\n';
                 }
                 else
@@ -142,6 +143,14 @@ void ProcessOrderAdd(const CommandTokenizer &tokens, const string &symbol_to_fil
         string side = tokens[CommandTokenizer::OA_SIDE];
         uint64_t quantity = stoull(tokens[CommandTokenizer::OA_QUANTITY]);
         double price = stod(tokens[CommandTokenizer::OA_PRICE]);
+
+        if (symbol.empty())
+        {
+            //Symbol can't be empty
+            cout << "ProcessOrderAdd(): Symbol is empty for order with id ["
+                << order_id << "]" << '\n';
+            return;
+        }
 
         auto & orders_active = OrderRegistry::get().getOrdersActive();
         if(orders_active.find(order_id) != orders_active.end())
@@ -328,11 +337,18 @@ void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_
  */
 void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
 {
-    string symbol_to_print = tokens[CommandTokenizer::BBO_SYMBOL];
+    string symbol = tokens[CommandTokenizer::BBO_SYMBOL];
+
+    if (symbol.empty())
+    {
+        //Symbol can't be empty
+        cout << "ProcessSubscribeBbo(): Symbol is empty" << '\n';
+        return;
+    }
 
     auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
 
-    ++bbo_subscribers[symbol_to_print];
+    ++bbo_subscribers[symbol];
 }
 
 /**
@@ -343,6 +359,13 @@ void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
 void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
 {
     string symbol = tokens[CommandTokenizer::BBO_SYMBOL];
+
+    if (symbol.empty())
+    {
+        //Symbol can't be empty
+        cout << "ProcessUnsubscribeBbo(): Symbol is empty" << '\n';
+        return;
+    }
 
     auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
 
@@ -371,6 +394,13 @@ void ProcessSubscribeVwap(const CommandTokenizer &tokens, const string &)
         string symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
         uint64_t quantity = stoull(tokens[CommandTokenizer::VWAP_QUANTITY]);
 
+        if (symbol.empty())
+        {
+            //Symbol can't be empty
+            cout << "ProcessSubscribeVwap(): Symbol is empty" << '\n';
+            return;
+        }
+
         auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
 
         ++vwap_subscribers[symbol][quantity];
@@ -394,6 +424,13 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
     {
         string symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
         uint64_t quantity = stoull(tokens[CommandTokenizer::VWAP_QUANTITY]);
+
+        if (symbol.empty())
+        {
+            //Symbol can't be empty
+            cout << "ProcessUnsubscribeVwap(): Symbol is empty" << '\n';
+            return;
+        }
 
         auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
 
@@ -425,6 +462,13 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
 void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
     string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
+
+    if (symbol_to_print.empty())
+    {
+        //Symbol can't be empty
+        cout << "ProcessPrint(): Symbol is empty" << '\n';
+        return;
+    }
 
     if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
     {
@@ -522,6 +566,13 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
 void ProcessPrintFull(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
     string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
+
+    if (symbol_to_print.empty())
+    {
+        //Symbol can't be empty
+        cout << "ProcessPrintFull(): Symbol is empty" << '\n';
+        return;
+    }
 
     if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
     {
