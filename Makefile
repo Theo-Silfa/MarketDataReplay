@@ -22,6 +22,7 @@ SRCDIR := src
 BUILDDIR := build
 TARGETDIR := bin
 TESTDIR := tests
+BENCHDIR := benchmarks
 
 # Targets
 EXECUTABLE := md_replay
@@ -30,16 +31,23 @@ TARGET := $(TARGETDIR)/$(EXECUTABLE)
 TESTEXECUTABLE := $(EXECUTABLE)_test
 TESTTARGET := $(TARGETDIR)/$(TESTEXECUTABLE)
 
+BENCHEXECUTABLE := $(EXECUTABLE)_benchmark
+BENCHTARGET := $(TARGETDIR)/$(BENCHEXECUTABLE)
+
 # Final Paths
 INSTALLBINDIR := /usr/local/bin
 
 # Code Lists
 SRCEXT := cpp
+
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 TESTSOURCES := $(shell find $(TESTDIR) -type f -name *.$(SRCEXT))
 TESTOBJECTS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/%,$(TESTSOURCES:.$(SRCEXT)=.o)) $(filter-out $(BUILDDIR)/main.o,$(OBJECTS))
+
+BENCHSOURCES := $(shell find $(BENCHDIR) -type f -name *.$(SRCEXT))
+BENCHOBJECTS := $(patsubst $(BENCHDIR)/%,$(BUILDDIR)/%,$(BENCHSOURCES:.$(SRCEXT)=.o)) $(filter-out $(BUILDDIR)/main.o,$(OBJECTS))
 
 # Shared Compiler Flags
 CFLAGS := -c -Wall -Wextra
@@ -48,6 +56,9 @@ LIB := -L /usr/local/lib
 
 TESTLIB := -L /usr/local/lib -lpthread -L ../gtestdist/lib -lgtest -lgtest_main
 TESTINC := -I ../gtestdist/include -I $(SRCDIR)
+
+BENCHLIB := -L /usr/local/lib -lpthread -L ../gtestdist/lib -lbenchmark
+BENCHINC := -I ../gtestdist/include -I $(SRCDIR)
 
 # Platform Specific Compiler Flags
 ifeq ($(UNAME_S),Linux)
@@ -58,7 +69,7 @@ endif
 
 .DEFAULT_GOAL := $(TARGET)
 
-all : $(TARGET) $(TESTTARGET)
+all : $(TARGET) $(TESTTARGET) $(BENCHTARGET)
 
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(TARGETDIR)
@@ -78,8 +89,17 @@ $(BUILDDIR)/%.o: $(TESTDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
 	@echo "Compiling $<..."; $(CC) $(CFLAGS) $(TESTINC) -c -o $@ $<
 
+$(BENCHTARGET): $(BENCHOBJECTS)
+	@mkdir -p $(TARGETDIR)
+	@echo "Linking..."
+	@echo "  Linking $(BENCHTARGET)"; $(CC) $^ -o $(BENCHTARGET) $(BENCHLIB)
+
+$(BUILDDIR)/%.o: $(BENCHDIR)/%.$(SRCEXT)
+	@mkdir -p $(BUILDDIR)
+	@echo "Compiling $<..."; $(CC) $(CFLAGS) $(BENCHINC) -c -o $@ $<
+
 clean:
-	@echo "Cleaning $(TARGET) $(TESTTARGET)..."; $(RM) -r $(BUILDDIR) $(TARGET) $(TESTTARGET) $(TARGETDIR)
+	@echo "Cleaning $(TARGET) $(TESTTARGET) $(BENCHTARGET)..."; $(RM) -r $(BUILDDIR) $(TARGET) $(TESTTARGET) $(TARGETDIR) $(BENCHTARGET)
 
 install:
 	@echo "Installing $(EXECUTABLE)..."; cp $(TARGET) $(INSTALLBINDIR)
