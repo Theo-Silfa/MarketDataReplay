@@ -111,7 +111,7 @@ public:
      * @param quantity number of shares
      * @param price for one share
      */
-    void add(uint64_t order_id, string side, uint64_t quantity, double price);
+    void add(uint64_t order_id, const string &side, uint64_t quantity, double price);
 
     /**
      * Is used to modify the existing order in this object.

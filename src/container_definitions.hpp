@@ -16,13 +16,23 @@
 #include <functional>
 
 //Local includes
+#include "order_request.hpp"
 
 using namespace std;
 
 //Forward declarations
-struct OrderRequest;
 
 //Definitions
+
+/**
+ * Enumeration to distinguish between Buy and Sell orders.
+ * Is used to make the connection between OrderIdMap and OrderSet*Ptr's
+ */
+enum OrderSide
+{
+    BUY,
+    SELL
+};
 
 /** Multiset (greater) pointer definition for the convinience */
 using OrderSetGreaterPtr = shared_ptr<multiset<OrderRequest, greater<OrderRequest>>>;
@@ -31,6 +41,6 @@ using OrderSetGreaterPtr = shared_ptr<multiset<OrderRequest, greater<OrderReques
 using OrderSetLessPtr = shared_ptr<multiset<OrderRequest, less<OrderRequest>>>;
 
 /** Set definition to take track on the existing order ids */
-using OrderIdMap = unordered_map<uint64_t, string>;
+using OrderIdMap = unordered_map<uint64_t, pair<OrderSide, multiset<OrderRequest>::iterator>>;
 
 #endif //_CONTAINERDEFINITIONS_H
