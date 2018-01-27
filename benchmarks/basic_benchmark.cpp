@@ -10,6 +10,7 @@
 #include <benchmark/benchmark.h>
 
 //Local includes
+#include "symbol_order_list.hpp"
 
 using namespace std;
 
@@ -17,18 +18,87 @@ using namespace std;
 
 /***************************** Benchmarks *****************************/
 
-static void BM_memcpy(benchmark::State& state) {
-  char* src = new char[state.range(0)];
-  char* dst = new char[state.range(0)];
-  memset(src, 'x', state.range(0));
-  for (auto _ : state)
-    memcpy(dst, src, state.range(0));
-  state.SetBytesProcessed(int64_t(state.iterations()) *
-                          int64_t(state.range(0)));
-  delete[] src;
-  delete[] dst;
+static void BM_OrderListAdd(benchmark::State& state)
+{
+    SymbolOrderList orders("AAPL");
+    uint64_t order_id = 0;
+    bool side_state = false;
+    uint64_t quantity = 1;
+    double price = 0.0;
+
+    for (auto _ : state)
+    {
+        for(int i = 1; i <= state.range(0); ++i)
+        {
+            orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+            price += 0.01;
+            side_state = !side_state;
+        }
+    }
 }
 
-BENCHMARK(BM_memcpy)->Range(8, 8<<10);
+BENCHMARK(BM_OrderListAdd)->Unit(benchmark::kMicrosecond)->RangeMultiplier(2)->Range(1<<10, 8<<10);
+
+
+static void BM_OrderListModify(benchmark::State& state)
+{
+    SymbolOrderList orders("AAPL");
+    uint64_t order_id = 0;
+    bool side_state = false;
+    uint64_t quantity = 1;
+    double price = 0.01;
+
+    for(int i = 1; i <= state.range(0); ++i)
+    {
+        orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+        price += 0.01;
+        side_state = !side_state;
+    }
+
+    for (auto _ : state)
+    {
+        order_id = 0;
+        quantity = 2;
+        price = 0.02;
+
+        for(int i = 1; i <= state.range(0); ++i)
+        {
+            orders.modify(order_id++, quantity, price);
+            quantity += 2;
+            price += 0.02;
+        }
+    }
+}
+
+BENCHMARK(BM_OrderListModify)->Unit(benchmark::kMicrosecond)->RangeMultiplier(2)->Range(1<<10, 8<<10);
+
+static void BM_OrderListCancel(benchmark::State& state)
+{
+    SymbolOrderList orders("AAPL");
+
+    for (auto _ : state)
+    {
+        uint64_t order_id = 0;
+        bool side_state = false;
+        uint64_t quantity = 1;
+        double price = 0.01;
+
+        for(int i = 1; i <= state.range(0); ++i)
+        {
+            orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+            price += 0.01;
+            side_state = !side_state;
+        }
+
+        order_id = 0;
+
+        for(int i = 1; i <= state.range(0); ++i)
+        {
+            orders.cancel(order_id++);
+        }
+    }
+}
+
+BENCHMARK(BM_OrderListCancel)->Unit(benchmark::kMicrosecond)->RangeMultiplier(2)->Range(1<<10, 8<<10);
 
 BENCHMARK_MAIN();
