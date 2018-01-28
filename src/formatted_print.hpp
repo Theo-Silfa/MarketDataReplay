@@ -11,7 +11,6 @@
 
 //System includes
 #include <string>
-#include <map>
 
 //Local includes
 #include "order_iterator.hpp"
