@@ -41,13 +41,13 @@ const int default_precision = 2;
 */
 void PrintBboInfo(const string &symbol)
 {
-    auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
+    auto &bbo_subscribers = OrderRegistry::get().getBboSubscribers();
 
     if (bbo_subscribers[symbol] > 0)
     {
         //We have subscribers for this symbol
 
-        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+        const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
 
         auto search = symbol_to_orders.find(symbol);
 
@@ -88,15 +88,15 @@ void PrintVwapInfo(const string &symbol)
 {
     try
     {
-        auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
+        auto &vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
 
-        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+        const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
 
         auto search = symbol_to_orders.find(symbol);
 
         if (search != symbol_to_orders.end())
         {
-            for (const auto & vwap_info : vwap_subscribers[symbol])
+            for (const auto &vwap_info : vwap_subscribers[symbol])
             {
                 if (vwap_info.second > 0)
                 {
@@ -139,8 +139,8 @@ void ProcessOrderAdd(const CommandTokenizer &tokens, const string &symbol_to_fil
     try
     {
         uint64_t order_id = stoull(tokens[CommandTokenizer::OA_ORDER_ID]);
-        string symbol = tokens[CommandTokenizer::OA_SYMBOL];
-        string side = tokens[CommandTokenizer::OA_SIDE];
+        const string &symbol = tokens[CommandTokenizer::OA_SYMBOL];
+        const string &side = tokens[CommandTokenizer::OA_SIDE];
         uint64_t quantity = stoull(tokens[CommandTokenizer::OA_QUANTITY]);
         double price = stod(tokens[CommandTokenizer::OA_PRICE]);
 
@@ -152,7 +152,7 @@ void ProcessOrderAdd(const CommandTokenizer &tokens, const string &symbol_to_fil
             return;
         }
 
-        auto & orders_active = OrderRegistry::get().getOrdersActive();
+        auto &orders_active = OrderRegistry::get().getOrdersActive();
         if(orders_active.find(order_id) != orders_active.end())
         {
             cout << "ProcessOrderAdd(): Order with id [" << order_id <<
@@ -219,7 +219,7 @@ void ProcessOrderModify(const CommandTokenizer &tokens, const string &symbol_to_
         uint64_t quantity = stoull(tokens[CommandTokenizer::OM_QUANTITY]);
         double price = stod(tokens[CommandTokenizer::OM_PRICE]);
 
-        auto & orders_active = OrderRegistry::get().getOrdersActive();
+        const auto &orders_active = OrderRegistry::get().getOrdersActive();
         auto search_for_active = orders_active.find(order_id);
 
         if( search_for_active == orders_active.end())
@@ -229,9 +229,9 @@ void ProcessOrderModify(const CommandTokenizer &tokens, const string &symbol_to_
             return;
         }
 
-        const string & symbol = search_for_active->second;
+        const string &symbol = search_for_active->second;
 
-        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+        const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
 
         auto search = symbol_to_orders.find(symbol);
 
@@ -278,7 +278,7 @@ void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_
     {
         uint64_t order_id = stoull(tokens[CommandTokenizer::OC_ORDER_ID]);
 
-        auto & orders_active = OrderRegistry::get().getOrdersActive();
+        auto &orders_active = OrderRegistry::get().getOrdersActive();
         auto search_for_active = orders_active.find(order_id);
 
         if( search_for_active == orders_active.end())
@@ -288,9 +288,9 @@ void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_
             return;
         }
 
-        const string & symbol = search_for_active->second;
+        const string &symbol = search_for_active->second;
 
-        auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+        const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
 
         auto search = symbol_to_orders.find(symbol);
 
@@ -337,7 +337,7 @@ void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_
  */
 void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
 {
-    string symbol = tokens[CommandTokenizer::BBO_SYMBOL];
+    const string &symbol = tokens[CommandTokenizer::BBO_SYMBOL];
 
     if (symbol.empty())
     {
@@ -346,7 +346,7 @@ void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
         return;
     }
 
-    auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
+    auto &bbo_subscribers = OrderRegistry::get().getBboSubscribers();
 
     ++bbo_subscribers[symbol];
 }
@@ -358,7 +358,7 @@ void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
  */
 void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
 {
-    string symbol = tokens[CommandTokenizer::BBO_SYMBOL];
+    const string &symbol = tokens[CommandTokenizer::BBO_SYMBOL];
 
     if (symbol.empty())
     {
@@ -367,9 +367,9 @@ void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
         return;
     }
 
-    auto & bbo_subscribers = OrderRegistry::get().getBboSubscribers();
+    auto &bbo_subscribers = OrderRegistry::get().getBboSubscribers();
 
-    auto & subscriber_count = bbo_subscribers[symbol];
+    auto &subscriber_count = bbo_subscribers[symbol];
 
     if (subscriber_count > 0)
     {
@@ -391,7 +391,7 @@ void ProcessSubscribeVwap(const CommandTokenizer &tokens, const string &)
 {
     try
     {
-        string symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
+        const string &symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
         uint64_t quantity = stoull(tokens[CommandTokenizer::VWAP_QUANTITY]);
 
         if (symbol.empty())
@@ -401,7 +401,7 @@ void ProcessSubscribeVwap(const CommandTokenizer &tokens, const string &)
             return;
         }
 
-        auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
+        auto &vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
 
         ++vwap_subscribers[symbol][quantity];
     }
@@ -422,7 +422,7 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
 {
     try
     {
-        string symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
+        const string &symbol = tokens[CommandTokenizer::VWAP_SYMBOL];
         uint64_t quantity = stoull(tokens[CommandTokenizer::VWAP_QUANTITY]);
 
         if (symbol.empty())
@@ -432,9 +432,9 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
             return;
         }
 
-        auto & vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
+        auto &vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
 
-        auto & subscriber_count = vwap_subscribers[symbol][quantity];
+        auto &subscriber_count = vwap_subscribers[symbol][quantity];
 
         if (subscriber_count > 0)
         {
@@ -461,7 +461,7 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
  */
 void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
-    string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
+    const string &symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
 
     if (symbol_to_print.empty())
     {
@@ -476,7 +476,7 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
         return;
     }
 
-    auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+    const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
 
     auto search = symbol_to_orders.find(symbol_to_print);
 
@@ -507,8 +507,8 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
             }
         }
 
-        auto bid_itr = bid_price_levels.begin();
-        auto ask_itr = ask_price_levels.begin();
+        auto bid_itr = bid_price_levels.cbegin();
+        auto ask_itr = ask_price_levels.cbegin();
 
         //Output format is:
         //Bid                             Ask
@@ -516,9 +516,9 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
 
         cout << "|Bid      |       Ask| <-- " << symbol_to_print << " PRINT" << '\n';
 
-        while (bid_itr != bid_price_levels.end() || ask_itr != ask_price_levels.end())
+        while (bid_itr != bid_price_levels.cend() || ask_itr != ask_price_levels.cend())
         {
-            if(bid_itr != bid_price_levels.end())
+            if(bid_itr != bid_price_levels.cend())
             {
                 cout << '<' << bid_itr->second
                         << '@' << fixed << setprecision(default_precision) << bid_itr->first
@@ -534,7 +534,7 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
 
             cout << '|';
 
-            if(ask_itr != ask_price_levels.end())
+            if(ask_itr != ask_price_levels.cend())
             {
                 cout << '<' << ask_itr->second
                         << '@' << fixed << setprecision(default_precision) << ask_itr->first
@@ -565,7 +565,7 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
  */
 void ProcessPrintFull(const CommandTokenizer &tokens, const string &symbol_to_filter)
 {
-    string symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
+    const string &symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
 
     if (symbol_to_print.empty())
     {
@@ -580,7 +580,7 @@ void ProcessPrintFull(const CommandTokenizer &tokens, const string &symbol_to_fi
         return;
     }
 
-    auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
+    const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
 
     auto search = symbol_to_orders.find(symbol_to_print);
 
