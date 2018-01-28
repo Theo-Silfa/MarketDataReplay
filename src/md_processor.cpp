@@ -275,7 +275,7 @@ void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
             return;
         }
     }
-    catch (out_of_range &e)
+    catch (out_of_range &)
     {
         cerr << "ProcessUnsubscribeBbo(): Can't unsubscribe. Where was no subscriptions to this symbol: ["
             << tokens[CommandTokenizer::BBO_SYMBOL] << "]" << '\n';
@@ -359,7 +359,7 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
             return;
         }
     }
-    catch (out_of_range &e)
+    catch (out_of_range &)
     {
         cerr << "ProcessUnsubscribeVwap(): Can't unsubscribe. Where was no subscriptions with such configuration: ["
             << tokens[CommandTokenizer::VWAP_SYMBOL] << ", " << tokens[CommandTokenizer::VWAP_QUANTITY] << "]\n";
