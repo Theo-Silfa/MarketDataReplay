@@ -67,6 +67,10 @@ void PutTogetherBbo(const pair<multiset<OrderRequest>::iterator, multiset<OrderR
                     double &bbo_price,
                     uint32_t &orders_in_range)
 {
+    bbo_volume = 0;
+    bbo_price = 0;
+    orders_in_range = 0;
+
     for_each(range.first, range.second,
         [&bbo_volume](const OrderRequest& obj){ bbo_volume += obj.quantity; });
 
@@ -232,10 +236,6 @@ OrderBbo SymbolOrderList::bbo()
         result.setBuySharePrice(bbo_price);
         result.setBuyOrderCount(orders_in_range);
         result.setBuyNil(false);
-
-        bbo_volume = 0;
-        bbo_price = 0;
-        orders_in_range = 0;
     }
 
     if (!orders_sell_->empty())
