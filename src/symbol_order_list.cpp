@@ -116,25 +116,14 @@ double CalculateVwap(multiset<OrderRequest>::iterator begin,
 SymbolOrderList::SymbolOrderList(string symbol) :
     orders_buy_(make_shared<multiset<OrderRequest, greater<OrderRequest>>>()),
     orders_sell_(make_shared<multiset<OrderRequest, less<OrderRequest>>>()),
+    total_quantity_(0),
     symbol_(symbol)
 {
 }
 
 uint64_t SymbolOrderList::totalQuantity()
 {
-    uint64_t total_quantity = 0;
-
-    for(const auto &order: *(orders_buy_))
-    {
-        total_quantity += order.quantity;
-    }
-
-    for(const auto &order: *(orders_sell_))
-    {
-        total_quantity += order.quantity;
-    }
-
-    return total_quantity;
+    return total_quantity_;
 }
 
 const string & SymbolOrderList::symbol()
@@ -169,6 +158,8 @@ void SymbolOrderList::add(uint64_t order_id, const string &side, uint64_t quanti
     }
 
     existing_orders_.insert({ order_id, {side_choice, itr} });
+
+    total_quantity_+=quantity;
 }
 
 void SymbolOrderList::modify(uint64_t order_id, uint64_t quantity, double price)
@@ -184,6 +175,8 @@ void SymbolOrderList::modify(uint64_t order_id, uint64_t quantity, double price)
             + "]");
     }
 
+    total_quantity_ -= search->second.second->quantity;
+
     if (search->second.first == OrderSide::BUY)
     {
         orders_buy_->erase(search->second.second);
@@ -194,6 +187,8 @@ void SymbolOrderList::modify(uint64_t order_id, uint64_t quantity, double price)
         orders_sell_->erase(search->second.second);
         search->second.second = orders_sell_->insert({order_id, quantity, price});
     }
+
+    total_quantity_ += quantity;
 }
 
 void SymbolOrderList::cancel(uint64_t order_id)
@@ -205,6 +200,8 @@ void SymbolOrderList::cancel(uint64_t order_id)
         throw OrderProcessException("No such order_id [" + to_string(order_id)
             + "]");
     }
+
+    total_quantity_ -= search->second.second->quantity;
 
     if (search->second.first == OrderSide::BUY)
     {

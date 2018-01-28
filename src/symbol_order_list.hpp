@@ -158,6 +158,9 @@ protected:
     /** Holds the existing orders in this object */
     OrderIdMap existing_orders_;
 
+    /** Holds the total amount of shares in this object */
+    uint64_t total_quantity_;
+
 private:
     /** Holds the symbol associated with this object */
     const string symbol_;
