@@ -12,7 +12,7 @@
 #include <fstream>
 
 //Local includes
-#include "command_tokenizer.hpp"
+#include "split.hpp"
 #include "md_processor.hpp"
 
 using namespace std;
@@ -43,7 +43,6 @@ int main(int argc, const char * argv[])
         exit(EXIT_FAILURE);
     }
 
-    md::tokenizers::CommandTokenizer tokenizer;
     md::processors::MdProcessor processor;
 
     processor.setFilter(symbol);
@@ -53,8 +52,8 @@ int main(int argc, const char * argv[])
     {
         if(!line.empty())
         {
-            tokenizer.tokenize(line);
-            processor.process(tokenizer);
+            const auto tokens = split(line, ',');
+            processor.process(tokens);
         }
     }
 

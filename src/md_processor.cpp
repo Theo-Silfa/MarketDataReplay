@@ -15,6 +15,10 @@
 #include "order_registry.hpp"
 #include "order_iterator.hpp"
 #include "formatted_print.hpp"
+#include "order_add_data.hpp"
+//TODO: remove this
+#include "command_tokenizer.hpp"
+using namespace md::tokenizers;
 
 using namespace md::processors;
 
@@ -26,10 +30,11 @@ namespace
  * This function implements Order Add command
  * @param tokens for OA command
  */
-void ProcessOrderAdd(const CommandTokenizer &tokens, const string &symbol_to_filter)
+void ProcessOrderAdd(const vector<string> &tokens, const string &symbol_to_filter)
 {
     try
     {
+        OrderAddData obj;
         uint64_t order_id = stoull(tokens[CommandTokenizer::OA_ORDER_ID]);
         const string &symbol = tokens[CommandTokenizer::OA_SYMBOL];
         const string &side = tokens[CommandTokenizer::OA_SIDE];
@@ -103,7 +108,7 @@ void ProcessOrderAdd(const CommandTokenizer &tokens, const string &symbol_to_fil
  * This function implements Order Modify command
  * @param tokens for OM command
  */
-void ProcessOrderModify(const CommandTokenizer &tokens, const string &symbol_to_filter)
+void ProcessOrderModify(const vector<string> &tokens, const string &symbol_to_filter)
 {
     try
     {
@@ -164,7 +169,7 @@ void ProcessOrderModify(const CommandTokenizer &tokens, const string &symbol_to_
  * This function implements Order Cancel command
  * @param tokens for OC command
  */
-void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_filter)
+void ProcessOrderCancel(const vector<string> &tokens, const string &symbol_to_filter)
 {
     try
     {
@@ -227,7 +232,7 @@ void ProcessOrderCancel(const CommandTokenizer &tokens, const string &symbol_to_
  * @param tokens for BBO command
  * @param symbol to be shown in output
  */
-void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
+void ProcessSubscribeBbo(const vector<string> &tokens, const string &)
 {
     const string &symbol = tokens[CommandTokenizer::BBO_SYMBOL];
 
@@ -248,7 +253,7 @@ void ProcessSubscribeBbo(const CommandTokenizer &tokens, const string &)
  * @param tokens for BBO command
  * @param symbol to be shown in output
  */
-void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
+void ProcessUnsubscribeBbo(const vector<string> &tokens, const string &)
 {
     try
     {
@@ -288,7 +293,7 @@ void ProcessUnsubscribeBbo(const CommandTokenizer &tokens, const string &)
  * @param tokens for VWAP command
  * @param symbol to be shown in output
  */
-void ProcessSubscribeVwap(const CommandTokenizer &tokens, const string &)
+void ProcessSubscribeVwap(const vector<string> &tokens, const string &)
 {
     try
     {
@@ -325,7 +330,7 @@ void ProcessSubscribeVwap(const CommandTokenizer &tokens, const string &)
  * @param tokens for VWAP command
  * @param symbol to be shown in output
  */
-void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
+void ProcessUnsubscribeVwap(const vector<string> &tokens, const string &)
 {
     try
     {
@@ -378,7 +383,7 @@ void ProcessUnsubscribeVwap(const CommandTokenizer &tokens, const string &)
  * @param tokens for PRINT command
  * @param symbol to be shown in output
  */
-void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter)
+void ProcessPrint(const vector<string> &tokens, const string &symbol_to_filter)
 {
     const string &symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
 
@@ -417,7 +422,7 @@ void ProcessPrint(const CommandTokenizer &tokens, const string &symbol_to_filter
  * @param tokens for PRINT_ALL command
  * @param symbol to be shown in output
  */
-void ProcessPrintFull(const CommandTokenizer &tokens, const string &symbol_to_filter)
+void ProcessPrintFull(const vector<string> &tokens, const string &symbol_to_filter)
 {
     const string &symbol_to_print = tokens[CommandTokenizer::PRINT_SYMBOL];
 
@@ -481,12 +486,12 @@ const string & MdProcessor::getFilter() const
     return symbol_;
 }
 
-void MdProcessor::process(const CommandTokenizer &tokens)
+void MdProcessor::process(const vector<string> &tokens)
 {
     try
     {
-        auto key = tokens[CommandTokenizer::COMMAND_NAME];
-        handlers_.at(key)(tokens, getFilter());
+        //TODO: fix magic number
+        handlers_.at(tokens[0])(tokens, getFilter());
     }
     catch (out_of_range &e)
     {

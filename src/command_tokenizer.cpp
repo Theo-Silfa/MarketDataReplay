@@ -27,36 +27,6 @@ namespace
 /** This string indicates the failure in the tokenizer */
 static const string NIL = "NIL";
 
-/**
- * Implements the split by delimiters alghorithm
- * @param s target string
- * @param delim delimiter to be used
- * @param result where to store the tokens
- */
-template<typename Out>
-void split(const string &s, char delim, Out result)
-{
-    stringstream ss(s);
-    string item;
-    while (getline(ss, item, delim))
-    {
-        *(result++) = item;
-    }
-}
-
-/**
- * Wraper around the split function. Vector specialized
- * @param s target string
- * @param delim delimiter to be used
- * @return vector of tokens
- */
-vector<string> split(const string &s, char delim)
-{
-    vector<string> elems;
-    split(s, delim, back_inserter(elems));
-    return elems;
-}
-
 } // namespace
 
 /*************************** CommandTokenizer *************************/
@@ -85,7 +55,7 @@ CommandTokenizer & CommandTokenizer::operator=(CommandTokenizer &&obj)
 
 void CommandTokenizer::tokenize(const string &raw)
 {
-    tokens_ = split(raw, ',');
+    //tokens_ = split(raw, ',');
 }
 
 const string & CommandTokenizer::operator[](uint8_t index) const
