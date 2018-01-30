@@ -64,7 +64,7 @@ TEST(SymbolOrderListTestCase, TotalQuantityTest)
 
     for (const auto & order: orders)
     {
-        order_list.add(order.order_id, "Buy", order.quantity, order.price);
+        order_list.add(order.order_id, OrderSide::BUY, order.quantity, order.price);
         expected_quantity += order.quantity;
     }
 
@@ -77,8 +77,8 @@ TEST(SymbolOrderListTestCase, BasicOrderAddTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    order_list.add(order_one.order_id, "Buy", order_one.quantity, order_one.price);
-    order_list.add(order_two.order_id, "Sell", order_two.quantity, order_two.price);
+    order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, order_one.price);
+    order_list.add(order_two.order_id, OrderSide::SELL, order_two.quantity, order_two.price);
 
     OrderIterator itr = order_list.getIterator();
 
@@ -95,12 +95,12 @@ TEST(SymbolOrderListTestCase, DuplicateOrderAddTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    order_list.add(order_one.order_id, "Buy", order_one.quantity, order_one.price);
+    order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, order_one.price);
 
-    EXPECT_THROW(order_list.add(order_one.order_id, "Buy", order_one.quantity, order_one.price),
+    EXPECT_THROW(order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, order_one.price),
         OrderProcessException);
 
-    EXPECT_THROW(order_list.add(order_one.order_id, "Sell", order_one.quantity, order_one.price),
+    EXPECT_THROW(order_list.add(order_one.order_id, OrderSide::SELL, order_one.quantity, order_one.price),
         OrderProcessException);
 }
 
@@ -108,9 +108,7 @@ TEST(SymbolOrderListTestCase, BadSideOrderAddTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    const string bad_side = "TATATA";
-
-    EXPECT_THROW(order_list.add(order_one.order_id, bad_side, order_one.quantity, order_one.price),
+    EXPECT_THROW(order_list.add(order_one.order_id, OrderSide::UNKNOWN, order_one.quantity, order_one.price),
         OrderProcessException);
 }
 
@@ -120,7 +118,7 @@ TEST(SymbolOrderListTestCase, NegativePriceOrderAddTest)
 
     const auto negative_price = order_one.price * -1.0;
 
-    EXPECT_THROW(order_list.add(order_one.order_id, "Buy", order_one.quantity, negative_price),
+    EXPECT_THROW(order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, negative_price),
         OrderProcessException);
 }
 
@@ -128,7 +126,7 @@ TEST(SymbolOrderListTestCase, ZeroQuantityOrderAddTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    EXPECT_THROW(order_list.add(order_one.order_id, "Buy", 0, order_one.price),
+    EXPECT_THROW(order_list.add(order_one.order_id, OrderSide::BUY, 0, order_one.price),
         OrderProcessException);
 }
 
@@ -136,8 +134,8 @@ TEST(SymbolOrderListTestCase, BasicOrderModifyTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    order_list.add(order_one.order_id, "Buy", order_one.quantity, order_one.price);
-    order_list.add(order_two.order_id, "Sell", order_two.quantity, order_two.price);
+    order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, order_one.price);
+    order_list.add(order_two.order_id, OrderSide::SELL, order_two.quantity, order_two.price);
 
     OrderRequest expected_order_buy = order_one;
     expected_order_buy.quantity += 10;
@@ -173,7 +171,7 @@ TEST(SymbolOrderListTestCase, NegativePriceOrderModifyTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    order_list.add(order_one.order_id, "Buy", order_one.quantity, order_one.price);
+    order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, order_one.price);
 
     const auto negative_price = order_one.price * -1.0;
 
@@ -185,7 +183,7 @@ TEST(SymbolOrderListTestCase, ZeroQuantityOrderModifyTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    order_list.add(order_one.order_id, "Buy", order_one.quantity, order_one.price);
+    order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, order_one.price);
 
     EXPECT_THROW(order_list.modify(order_one.order_id, 0, order_one.price),
         OrderProcessException);
@@ -195,8 +193,8 @@ TEST(SymbolOrderListTestCase, BasicOrderCancelTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    order_list.add(order_one.order_id, "Buy", order_one.quantity, order_one.price);
-    order_list.add(order_two.order_id, "Sell", order_two.quantity, order_two.price);
+    order_list.add(order_one.order_id, OrderSide::BUY, order_one.quantity, order_one.price);
+    order_list.add(order_two.order_id, OrderSide::SELL, order_two.quantity, order_two.price);
 
     order_list.cancel(order_one.order_id);
     order_list.cancel(order_two.order_id);
@@ -217,7 +215,7 @@ TEST(SymbolOrderListTestCase, BasicOrderBboTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    auto AddOrders = [&order_list](const string& side, uint64_t order_id_shift)
+    auto AddOrders = [&order_list](OrderSide side, uint64_t order_id_shift)
     {
         order_list.add(order_one.order_id + order_id_shift, side, order_one.quantity, order_one.price);
         order_list.add(order_two.order_id + order_id_shift, side, order_two.quantity, order_two.price);
@@ -229,8 +227,8 @@ TEST(SymbolOrderListTestCase, BasicOrderBboTest)
         order_list.add(order_four_dub.order_id + order_id_shift, side, order_four_dub.quantity, order_four_dub.price);
     };
 
-    AddOrders("Buy", 0);
-    AddOrders("Sell", 1000);
+    AddOrders(OrderSide::BUY, 0);
+    AddOrders(OrderSide::SELL, 1000);
 
     OrderBbo actual_bbo = order_list.bbo();
 
@@ -258,7 +256,7 @@ TEST(SymbolOrderListTestCase, BasicOrderVwapTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    auto AddOrders = [&order_list](const string& side, uint64_t order_id_shift)
+    auto AddOrders = [&order_list](OrderSide side, uint64_t order_id_shift)
     {
         order_list.add(order_one.order_id + order_id_shift, side, order_one.quantity, order_one.price);
         order_list.add(order_two.order_id + order_id_shift, side, order_two.quantity, order_two.price);
@@ -270,8 +268,8 @@ TEST(SymbolOrderListTestCase, BasicOrderVwapTest)
         order_list.add(order_four_dub.order_id + order_id_shift, side, order_four_dub.quantity, order_four_dub.price);
     };
 
-    AddOrders("Buy", 0);
-    AddOrders("Sell", 1000);
+    AddOrders(OrderSide::BUY, 0);
+    AddOrders(OrderSide::SELL, 1000);
 
     uint64_t demanded_quantity = 125;
 
@@ -295,7 +293,7 @@ TEST(SymbolOrderListTestCase, UnEvenBasicOrderVwapTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    auto AddOrders = [&order_list](const string& side, uint64_t order_id_shift)
+    auto AddOrders = [&order_list](OrderSide side, uint64_t order_id_shift)
     {
         order_list.add(order_one.order_id + order_id_shift, side, order_one.quantity, order_one.price);
         order_list.add(order_two.order_id + order_id_shift, side, order_two.quantity, order_two.price);
@@ -307,8 +305,8 @@ TEST(SymbolOrderListTestCase, UnEvenBasicOrderVwapTest)
         order_list.add(order_four_dub.order_id + order_id_shift, side, order_four_dub.quantity, order_four_dub.price);
     };
 
-    AddOrders("Buy", 0);
-    AddOrders("Sell", 1000);
+    AddOrders(OrderSide::BUY, 0);
+    AddOrders(OrderSide::SELL, 1000);
 
     uint64_t demanded_quantity = 130;
 
@@ -335,7 +333,7 @@ TEST(SymbolOrderListTestCase, TooMuchQuantityOrderVwapTest)
 {
     SymbolOrderList order_list(DEFAULT_SHARE_NAME);
 
-    auto AddOrders = [&order_list](const string& side, uint64_t order_id_shift)
+    auto AddOrders = [&order_list](OrderSide side, uint64_t order_id_shift)
     {
         order_list.add(order_one.order_id + order_id_shift, side, order_one.quantity, order_one.price);
         order_list.add(order_two.order_id + order_id_shift, side, order_two.quantity, order_two.price);
@@ -347,8 +345,8 @@ TEST(SymbolOrderListTestCase, TooMuchQuantityOrderVwapTest)
         order_list.add(order_four_dub.order_id + order_id_shift, side, order_four_dub.quantity, order_four_dub.price);
     };
 
-    AddOrders("Buy", 0);
-    AddOrders("Sell", 1000);
+    AddOrders(OrderSide::BUY, 0);
+    AddOrders(OrderSide::SELL, 1000);
 
     uint64_t demanded_quantity = numeric_limits<uint64_t>::max();
     double expected_bid_vwap = 0.0;

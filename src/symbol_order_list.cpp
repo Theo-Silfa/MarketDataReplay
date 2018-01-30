@@ -32,7 +32,7 @@ namespace
  * @param price for one share
  */
 void OrderCheckAssertion(const uint64_t order_id,
-                         const string &side,
+                         const OrderSide side,
                          const uint64_t quantity,
                          const double price)
 {
@@ -48,10 +48,10 @@ void OrderCheckAssertion(const uint64_t order_id,
             + "] price is negative");
     }
 
-    if (side != "Buy" && side != "Sell")
+    if (side == OrderSide::UNKNOWN)
     {
         throw OrderProcessException("For order_id [" + to_string(order_id)
-            + "] side is unknown: [" + side + "]");
+            + "] side is unknown");
     }
 }
 
@@ -135,7 +135,7 @@ const string & SymbolOrderList::symbol()
     return symbol_;
 }
 
-void SymbolOrderList::add(uint64_t order_id, const string &side, uint64_t quantity, double price)
+void SymbolOrderList::add(uint64_t order_id, OrderSide side, uint64_t quantity, double price)
 {
     OrderCheckAssertion(order_id, side, quantity, price);
 
@@ -147,21 +147,18 @@ void SymbolOrderList::add(uint64_t order_id, const string &side, uint64_t quanti
             + "]");
     }
 
-    OrderSide side_choice;
     multiset<OrderRequest>::iterator itr;
 
-    if (side == "Buy")
+    if (side == OrderSide::BUY)
     {
-        side_choice = OrderSide::BUY;
         itr = orders_buy_->insert({order_id, quantity, price});
     }
-    else if (side == "Sell")
+    else if (side == OrderSide::SELL)
     {
-        side_choice = OrderSide::SELL;
         itr = orders_sell_->insert({order_id, quantity, price});
     }
 
-    existing_orders_.insert({ order_id, {side_choice, itr} });
+    existing_orders_.insert({ order_id, {side, itr} });
 
     total_quantity_+=quantity;
 }
@@ -169,7 +166,7 @@ void SymbolOrderList::add(uint64_t order_id, const string &side, uint64_t quanti
 void SymbolOrderList::modify(uint64_t order_id, uint64_t quantity, double price)
 {
     //To prevent from throwing - feed dummy side to the assertion
-    OrderCheckAssertion(order_id, "Buy", quantity, price);
+    OrderCheckAssertion(order_id, OrderSide::BUY, quantity, price);
 
     auto search = existing_orders_.find(order_id);
 
