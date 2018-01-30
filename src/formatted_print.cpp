@@ -203,12 +203,25 @@ void PrintFullOrderList(OrderIterator itr, const string &symbol_to_print)
             << '|' << setw(default_width) << "order id"
             << '|' << " <-- " << symbol_to_print << " PRINT_FULL" <<'\n';
 
-    OrderIterator::DoneStatus status;
-    do
+    if (itr.done() == OrderIterator::ALL_DONE)
     {
-        status = itr.done();
+        cout << '|' << setw(default_width) << NIL
+             << '|' << setw(default_width) << NIL
+             << '|' << setw(default_width) << NIL
+             << '|' << setw(default_width) << NIL
+             << '|' << setw(default_width) << NIL
+             << '|' << setw(default_width) << NIL
+             << '|' << '\n';
+        return;
+    }
 
-        if(status != OrderIterator::BID_DONE && status != OrderIterator::ALL_DONE)
+    for (;
+        itr.done() != OrderIterator::ALL_DONE;
+        itr.next())
+    {
+        auto status = itr.done();
+
+        if(status != OrderIterator::BID_DONE)
         {
             const auto &bid_order = itr.getBid();
 
@@ -223,7 +236,7 @@ void PrintFullOrderList(OrderIterator itr, const string &symbol_to_print)
                     << '|' << setw(default_width) << NIL;
         }
 
-        if(status != OrderIterator::ASK_DONE && status != OrderIterator::ALL_DONE)
+        if(status != OrderIterator::ASK_DONE)
         {
             const auto &ask_order = itr.getAsk();
 
@@ -239,8 +252,5 @@ void PrintFullOrderList(OrderIterator itr, const string &symbol_to_print)
                     << '|' << setw(default_width) << NIL
                     << '|' << '\n';
         }
-
-        itr.next();
     }
-    while (status != OrderIterator::ALL_DONE);
 }
