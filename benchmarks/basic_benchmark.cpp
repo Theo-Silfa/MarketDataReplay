@@ -31,7 +31,7 @@ static void BM_OrderListAdd(benchmark::State& state)
     {
         for(int i = 1; i <= state.range(0); ++i)
         {
-            orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+            orders.add(order_id++, (side_state ? OrderSide::BUY : OrderSide::SELL), quantity++, price);
             price += 0.01;
             side_state = !side_state;
         }
@@ -51,7 +51,7 @@ static void BM_OrderListModify(benchmark::State& state)
 
     for(int i = 1; i <= state.range(0); ++i)
     {
-        orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+        orders.add(order_id++, (side_state ? OrderSide::BUY : OrderSide::SELL), quantity++, price);
         price += 0.01;
         side_state = !side_state;
     }
@@ -86,7 +86,7 @@ static void BM_OrderListCancel(benchmark::State& state)
 
         for(int i = 1; i <= state.range(0); ++i)
         {
-            orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+            orders.add(order_id++, (side_state ? OrderSide::BUY : OrderSide::SELL), quantity++, price);
             price += 0.01;
             side_state = !side_state;
         }
@@ -112,7 +112,7 @@ static void BM_OrderListVwap(benchmark::State& state)
 
     for(int i = 1; i <= state.range(0); ++i)
     {
-        orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+        orders.add(order_id++, (side_state ? OrderSide::BUY : OrderSide::SELL), quantity++, price);
         price += 0.01;
         side_state = !side_state;
     }
@@ -138,7 +138,7 @@ static void BM_OrderListBbo(benchmark::State& state)
 
     for(int i = 1; i <= state.range(0); ++i)
     {
-        orders.add(order_id++, (side_state ? "Buy" : "Sell"), quantity++, price);
+        orders.add(order_id++, (side_state ? OrderSide::BUY : OrderSide::SELL), quantity++, price);
         price += 0.01;
         side_state = !side_state;
     }
