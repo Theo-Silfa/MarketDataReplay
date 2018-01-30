@@ -33,6 +33,7 @@ PrintData::PrintData(PrintData &obj) :
 
 PrintData & PrintData::operator=(const PrintData &obj)
 {
+    Parent::operator=(obj);
     symbol_ = obj.symbol_;
     command_ = obj.command_;
     return *this;

@@ -39,6 +39,7 @@ OrderAddData::OrderAddData(OrderAddData & obj) :
 
 OrderAddData & OrderAddData::operator=(const OrderAddData &obj)
 {
+    Parent::operator=(obj);
     order_id_ = obj.order_id_;
     symbol_ = obj.symbol_;
     side_ = obj.side_;

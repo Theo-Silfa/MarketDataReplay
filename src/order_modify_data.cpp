@@ -35,6 +35,7 @@ OrderModifyData::OrderModifyData(OrderModifyData & obj) :
 
 OrderModifyData & OrderModifyData::operator=(const OrderModifyData &obj)
 {
+    Parent::operator=(obj);
     order_id_ = obj.order_id_;
     quantity_ = obj.quantity_;
     price_ = obj.price_;

@@ -31,6 +31,7 @@ OrderCancelData::OrderCancelData(OrderCancelData & obj) :
 
 OrderCancelData & OrderCancelData::operator=(const OrderCancelData &obj)
 {
+    Parent::operator=(obj);
     order_id_ = obj.order_id_;
     return *this;
 }

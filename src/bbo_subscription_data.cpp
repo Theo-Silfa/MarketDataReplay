@@ -33,6 +33,7 @@ BboSubscriptionData::BboSubscriptionData(BboSubscriptionData &obj) :
 
 BboSubscriptionData & BboSubscriptionData::operator=(const BboSubscriptionData &obj)
 {
+    Parent::operator=(obj);
     symbol_ = obj.symbol_;
     command_ = obj.command_;
     return *this;
