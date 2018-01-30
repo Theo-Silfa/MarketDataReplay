@@ -33,12 +33,12 @@ void OrderIterator::next()
 {
     DoneStatus status = done();
 
-    if(status != DoneStatus::BID_DONE)
+    if(status != DoneStatus::BID_DONE && status != DoneStatus::ALL_DONE)
     {
         ++current_bid_;
     }
 
-    if(status != DoneStatus::ASK_DONE)
+    if(status != DoneStatus::ASK_DONE && status != DoneStatus::ALL_DONE)
     {
         ++current_ask_;
     }

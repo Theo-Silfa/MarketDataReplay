@@ -158,7 +158,7 @@ void PrintPriceLevels(OrderIterator itr, const string &symbol_to_print)
 
     cout << "|Bid      |       Ask| <-- " << symbol_to_print << " PRINT" << '\n';
 
-    while (bid_itr != bid_price_levels.cend() || ask_itr != ask_price_levels.cend())
+    do
     {
         if(bid_itr != bid_price_levels.cend())
         {
@@ -190,6 +190,7 @@ void PrintPriceLevels(OrderIterator itr, const string &symbol_to_print)
                     << '>' << '\n';
         }
     }
+    while (bid_itr != bid_price_levels.cend() || ask_itr != ask_price_levels.cend());
 }
 
 void PrintFullOrderList(OrderIterator itr, const string &symbol_to_print)
@@ -202,13 +203,12 @@ void PrintFullOrderList(OrderIterator itr, const string &symbol_to_print)
             << '|' << setw(default_width) << "order id"
             << '|' << " <-- " << symbol_to_print << " PRINT_FULL" <<'\n';
 
-    for (;
-        itr.done() != OrderIterator::ALL_DONE;
-        itr.next())
+    OrderIterator::DoneStatus status;
+    do
     {
-        auto DoneStatus = itr.done();
+        status = itr.done();
 
-        if(DoneStatus != OrderIterator::BID_DONE)
+        if(status != OrderIterator::BID_DONE && status != OrderIterator::ALL_DONE)
         {
             const auto &bid_order = itr.getBid();
 
@@ -223,7 +223,7 @@ void PrintFullOrderList(OrderIterator itr, const string &symbol_to_print)
                     << '|' << setw(default_width) << NIL;
         }
 
-        if(DoneStatus != OrderIterator::ASK_DONE)
+        if(status != OrderIterator::ASK_DONE && status != OrderIterator::ALL_DONE)
         {
             const auto &ask_order = itr.getAsk();
 
@@ -239,5 +239,8 @@ void PrintFullOrderList(OrderIterator itr, const string &symbol_to_print)
                     << '|' << setw(default_width) << NIL
                     << '|' << '\n';
         }
+
+        itr.next();
     }
+    while (status != OrderIterator::ALL_DONE);
 }
