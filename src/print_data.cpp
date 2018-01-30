@@ -25,6 +25,7 @@ PrintData::PrintData(const string &command) :
 
 
 PrintData::PrintData(PrintData &obj) :
+    Parent(obj),
     symbol_(obj.symbol_),
     command_(obj.command_)
 {

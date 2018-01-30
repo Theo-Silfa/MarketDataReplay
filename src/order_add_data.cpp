@@ -28,6 +28,7 @@ OrderAddData::OrderAddData() :
 
 
 OrderAddData::OrderAddData(OrderAddData & obj) :
+    Parent(obj),
     order_id_(obj.order_id_),
     symbol_(obj.symbol_),
     side_(obj.side_),

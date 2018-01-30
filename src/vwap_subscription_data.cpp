@@ -26,6 +26,7 @@ VwapSubscriptionData::VwapSubscriptionData(const string &command) :
 
 
 VwapSubscriptionData::VwapSubscriptionData(VwapSubscriptionData &obj) :
+    Parent(obj),
     symbol_(obj.symbol_),
     quantity_(obj.quantity_),
     command_(obj.command_)

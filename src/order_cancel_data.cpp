@@ -24,6 +24,7 @@ OrderCancelData::OrderCancelData() :
 
 
 OrderCancelData::OrderCancelData(OrderCancelData & obj) :
+    Parent(obj),
     order_id_(obj.order_id_)
 {
 }

@@ -25,6 +25,7 @@ BboSubscriptionData::BboSubscriptionData(const string &command) :
 
 
 BboSubscriptionData::BboSubscriptionData(BboSubscriptionData &obj) :
+    Parent(obj),
     symbol_(obj.symbol_),
     command_(obj.command_)
 {

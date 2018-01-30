@@ -26,6 +26,7 @@ OrderModifyData::OrderModifyData() :
 
 
 OrderModifyData::OrderModifyData(OrderModifyData & obj) :
+    Parent(obj),
     order_id_(obj.order_id_),
     quantity_(obj.quantity_),
     price_(obj.price_)
