@@ -30,6 +30,7 @@ using namespace std;
  */
 enum OrderSide
 {
+    UNKNOWN,
     BUY,
     SELL
 };

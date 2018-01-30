@@ -12,11 +12,11 @@
 //System includes
 #include <unordered_map>
 #include <string>
+#include <vector>
 #include <functional>
 
 //Local includes
 #include "defines.h"
-#include "command_tokenizer.hpp"
 
 namespace md
 {
@@ -24,7 +24,6 @@ namespace processors
 {
 
 using namespace std;
-using namespace md::tokenizers;
 
 /**
  * Market data processor class. Is used to process the tokens in to the
@@ -55,12 +54,13 @@ public:
     /**
      * Main routine for processing the tokens in to commands
      * @param tokens what to be processed
+     * @return true if the processing was successfull false otherwise
      */
-    void process(const CommandTokenizer &tokens);
+    bool process(const vector<string> &tokens);
 
 protected:
     /** Token handler definition */
-    using MdHandler = function<void(const CommandTokenizer &, const string &)>;
+    using MdHandler = function<bool(const vector<string> &, const string &)>;
 
     /** Handler map definition */
     using MdHandlerMap = unordered_map<string, MdHandler>;

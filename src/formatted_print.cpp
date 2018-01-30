@@ -66,7 +66,7 @@ void PrintBboInfo(const string &symbol)
         else
         {
             cout << "PrintBboInfo(): Can't find order list associated with this symbol: ["
-                << symbol <<"]. Skipping printing bbo info." << '\n';
+                << symbol <<"]. Skipping printing bbo info" << '\n';
             return;
         }
     }
@@ -112,7 +112,7 @@ void PrintVwapInfo(const string &symbol)
         else
         {
             cout << "PrintVwapInfo(): Can't find order list associated with this symbol: ["
-                << symbol << "]. Skipping printing vwap info." << '\n';
+                << symbol << "]. Skipping printing vwap info" << '\n';
             return;
         }
     }
