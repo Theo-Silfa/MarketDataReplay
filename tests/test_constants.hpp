@@ -10,6 +10,7 @@
 #define _TESTCONSTANTS_H
 
 //System includes
+#include <functional>
 
 //Local includes
 #include "order_request.hpp"

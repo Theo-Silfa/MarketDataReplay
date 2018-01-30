@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <functional>
 
 //Local includes
 #include "defines.h"
