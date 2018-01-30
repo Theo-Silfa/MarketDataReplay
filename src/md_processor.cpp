@@ -33,18 +33,18 @@ namespace
  * This function implements Order Add command
  * @param tokens for OA command
  */
-void ProcessOrderAdd(const vector<string> &tokens, const string &symbol_to_filter)
+bool ProcessOrderAdd(const vector<string> &tokens, const string &symbol_to_filter)
 {
     try
     {
-        OrderAddData obj;
+        static OrderAddData obj;
         obj.processTokens(tokens);
 
         if (!obj.isProcessed())
         {
             cout << "ProcessOrderAdd(): Tokens were not processed successfully. Reason: ["
                 << obj.errorMessage() << "]" << '\n';
-            return;
+            return false;
         }
 
         uint64_t order_id = obj.getOrderId();
@@ -58,7 +58,7 @@ void ProcessOrderAdd(const vector<string> &tokens, const string &symbol_to_filte
         {
             cout << "ProcessOrderAdd(): Order with id [" << order_id <<
                 "] already exists" << '\n';
-            return;
+            return false;
         }
 
         auto & symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
@@ -78,8 +78,8 @@ void ProcessOrderAdd(const vector<string> &tokens, const string &symbol_to_filte
             if(!added_symbol.second)
             {
                 cout << "ProcessOrderAdd(): Could not register order with id [" << order_id <<
-                "] and symbol [" << symbol << "]" << '\n';
-                return;
+                    "] and symbol [" << symbol << "]" << '\n';
+                return false;
             }
 
             added_symbol.first->second->add(order_id, side, quantity, price);
@@ -93,12 +93,14 @@ void ProcessOrderAdd(const vector<string> &tokens, const string &symbol_to_filte
             PrintBboInfo(symbol);
             PrintVwapInfo(symbol);
         }
+
+        return true;
     }
     catch (OrderProcessException &e)
     {
         cerr << "ProcessOrderAdd(): OrderProcessException: [" << string(e.what())
             << "]" << '\n';
-        return;
+        return false;
     }
 }
 
@@ -106,18 +108,18 @@ void ProcessOrderAdd(const vector<string> &tokens, const string &symbol_to_filte
  * This function implements Order Modify command
  * @param tokens for OM command
  */
-void ProcessOrderModify(const vector<string> &tokens, const string &symbol_to_filter)
+bool ProcessOrderModify(const vector<string> &tokens, const string &symbol_to_filter)
 {
     try
     {
-        OrderModifyData obj;
+        static OrderModifyData obj;
         obj.processTokens(tokens);
 
         if (!obj.isProcessed())
         {
             cout << "ProcessOrderModify(): Tokens were not processed successfully. Reason: ["
                 << obj.errorMessage() << "]" << '\n';
-            return;
+            return false;
         }
 
         uint64_t order_id = obj.getOrderId();
@@ -129,9 +131,9 @@ void ProcessOrderModify(const vector<string> &tokens, const string &symbol_to_fi
 
         if( search_for_active == orders_active.end())
         {
-            cout << "ProcessOrderModify(): Can't find order with id [" << order_id <<
-            "]" << '\n';
-            return;
+            cout << "ProcessOrderModify(): Order with such id is not registered in the system ["
+                << order_id << "]" << '\n';
+            return false;
         }
 
         const string &symbol = search_for_active->second;
@@ -155,15 +157,17 @@ void ProcessOrderModify(const vector<string> &tokens, const string &symbol_to_fi
         else
         {
             cout << "ProcessOrderModify(): The order is present but it's symbol is not registered. Order id:["
-            << order_id << "]. Symbol [" << symbol << "]" << '\n';
-            return;
+                << order_id << "]. Symbol [" << symbol << "]" << '\n';
+            return false;
         }
+
+        return true;
     }
     catch (OrderProcessException &e)
     {
         cerr << "ProcessOrderModify(): OrderProcessException: [" << string(e.what())
             << "]" << '\n';
-        return;
+        return false;
     }
 }
 
@@ -171,18 +175,18 @@ void ProcessOrderModify(const vector<string> &tokens, const string &symbol_to_fi
  * This function implements Order Cancel command
  * @param tokens for OC command
  */
-void ProcessOrderCancel(const vector<string> &tokens, const string &symbol_to_filter)
+bool ProcessOrderCancel(const vector<string> &tokens, const string &symbol_to_filter)
 {
     try
     {
-        OrderCancelData obj;
+        static OrderCancelData obj;
         obj.processTokens(tokens);
 
         if (!obj.isProcessed())
         {
             cout << "ProcessOrderCancel(): Tokens were not processed successfully. Reason: ["
                 << obj.errorMessage() << "]" << '\n';
-            return;
+            return false;
         }
 
         uint64_t order_id = obj.getOrderId();
@@ -192,9 +196,9 @@ void ProcessOrderCancel(const vector<string> &tokens, const string &symbol_to_fi
 
         if( search_for_active == orders_active.end())
         {
-            cout << "ProcessOrderCancel(): Can't find order with id [" << order_id <<
-            "]" << '\n';
-            return;
+            cout << "ProcessOrderCancel(): Order with such id is not registered in the system ["
+                << order_id << "]" << '\n';
+            return false;
         }
 
         const string &symbol = search_for_active->second;
@@ -224,12 +228,14 @@ void ProcessOrderCancel(const vector<string> &tokens, const string &symbol_to_fi
         }
 
         orders_active.erase(search_for_active);
+
+        return true;
     }
     catch (OrderProcessException &e)
     {
         cerr << "ProcessOrderCancel(): OrderProcessException: [" << string(e.what())
             << "]" << '\n';
-        return;
+        return false;
     }
 }
 
@@ -238,16 +244,16 @@ void ProcessOrderCancel(const vector<string> &tokens, const string &symbol_to_fi
  * @param tokens for BBO command
  * @param symbol to be shown in output
  */
-void ProcessSubscribeBbo(const vector<string> &tokens, const string &)
+bool ProcessSubscribeBbo(const vector<string> &tokens, const string &)
 {
-    BboSubscriptionData obj("SUBSCRIBE BBO");
+    static BboSubscriptionData obj("SUBSCRIBE BBO");
     obj.processTokens(tokens);
 
     if (!obj.isProcessed())
     {
         cout << "ProcessSubscribeBbo(): Tokens were not processed successfully. Reason: ["
             << obj.errorMessage() << "]" << '\n';
-        return;
+        return false;
     }
 
     const string &symbol = obj.getSymbol();
@@ -255,6 +261,8 @@ void ProcessSubscribeBbo(const vector<string> &tokens, const string &)
     auto &bbo_subscribers = OrderRegistry::get().getBboSubscribers();
 
     ++bbo_subscribers[symbol];
+
+    return true;
 }
 
 /**
@@ -262,16 +270,16 @@ void ProcessSubscribeBbo(const vector<string> &tokens, const string &)
  * @param tokens for BBO command
  * @param symbol to be shown in output
  */
-void ProcessUnsubscribeBbo(const vector<string> &tokens, const string &)
+bool ProcessUnsubscribeBbo(const vector<string> &tokens, const string &)
 {
-    BboSubscriptionData obj("UNSUBSCRIBE BBO");
+    static BboSubscriptionData obj("UNSUBSCRIBE BBO");
     obj.processTokens(tokens);
 
     if (!obj.isProcessed())
     {
         cout << "ProcessUnsubscribeBbo(): Tokens were not processed successfully. Reason: ["
             << obj.errorMessage() << "]" << '\n';
-        return;
+        return false;
     }
 
     const string &symbol = obj.getSymbol();
@@ -289,14 +297,15 @@ void ProcessUnsubscribeBbo(const vector<string> &tokens, const string &)
         else
         {
             //Do nothing. We are not subscribed to anyone here
-            return;
         }
+
+        return true;
     }
     catch (out_of_range &)
     {
         cerr << "ProcessUnsubscribeBbo(): Can't unsubscribe. Where was no subscriptions to this symbol: ["
             << symbol << "]" << '\n';
-        return;
+        return false;
     }
 }
 
@@ -305,16 +314,16 @@ void ProcessUnsubscribeBbo(const vector<string> &tokens, const string &)
  * @param tokens for VWAP command
  * @param symbol to be shown in output
  */
-void ProcessSubscribeVwap(const vector<string> &tokens, const string &)
+bool ProcessSubscribeVwap(const vector<string> &tokens, const string &)
 {
-    VwapSubscriptionData obj("SUBSCRIBE VWAP");
+    static VwapSubscriptionData obj("SUBSCRIBE VWAP");
     obj.processTokens(tokens);
 
     if (!obj.isProcessed())
     {
         cout << "ProcessSubscribeVwap(): Tokens were not processed successfully. Reason: ["
             << obj.errorMessage() << "]" << '\n';
-        return;
+        return false;
     }
 
     const string &symbol = obj.getSymbol();
@@ -323,12 +332,14 @@ void ProcessSubscribeVwap(const vector<string> &tokens, const string &)
     if (quantity == 0)
     {
         cout << "ProcessSubscribeVwap(): Quantity can't be zero" << '\n';
-        return;
+        return false;
     }
 
     auto &vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
 
     ++vwap_subscribers[symbol][quantity];
+
+    return true;
 }
 
 /**
@@ -336,16 +347,16 @@ void ProcessSubscribeVwap(const vector<string> &tokens, const string &)
  * @param tokens for VWAP command
  * @param symbol to be shown in output
  */
-void ProcessUnsubscribeVwap(const vector<string> &tokens, const string &)
+bool ProcessUnsubscribeVwap(const vector<string> &tokens, const string &)
 {
-    VwapSubscriptionData obj("UNSUBSCRIBE VWAP");
+    static VwapSubscriptionData obj("UNSUBSCRIBE VWAP");
     obj.processTokens(tokens);
 
     if (!obj.isProcessed())
     {
         cout << "ProcessUnsubscribeVwap(): Tokens were not processed successfully. Reason: ["
             << obj.errorMessage() << "]" << '\n';
-        return;
+        return false;
     }
 
     const string &symbol = obj.getSymbol();
@@ -356,7 +367,7 @@ void ProcessUnsubscribeVwap(const vector<string> &tokens, const string &)
         if (quantity == 0)
         {
             cout << "ProcessUnsubscribeVwap(): Quantity can't be zero" << '\n';
-            return;
+            return false;
         }
 
         auto &vwap_subscribers = OrderRegistry::get().getVwapSubscribers();
@@ -370,14 +381,15 @@ void ProcessUnsubscribeVwap(const vector<string> &tokens, const string &)
         else
         {
             //Do nothing. We are not subscribed to anyone here
-            return;
         }
+
+        return true;
     }
     catch (out_of_range &)
     {
         cerr << "ProcessUnsubscribeVwap(): Can't unsubscribe. Where was no subscriptions with such configuration: ["
             << symbol << ", " << quantity << "]\n";
-        return;
+        return false;
     }
 }
 
@@ -386,16 +398,16 @@ void ProcessUnsubscribeVwap(const vector<string> &tokens, const string &)
  * @param tokens for PRINT command
  * @param symbol to be shown in output
  */
-void ProcessPrint(const vector<string> &tokens, const string &symbol_to_filter)
+bool ProcessPrint(const vector<string> &tokens, const string &symbol_to_filter)
 {
-    PrintData obj("PRINT");
+    static PrintData obj("PRINT");
     obj.processTokens(tokens);
 
     if (!obj.isProcessed())
     {
         cout << "ProcessPrint(): Tokens were not processed successfully. Reason: ["
             << obj.errorMessage() << "]" << '\n';
-        return;
+        return false;
     }
 
     const string &symbol_to_print = obj.getSymbol();
@@ -403,7 +415,7 @@ void ProcessPrint(const vector<string> &tokens, const string &symbol_to_filter)
     if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
     {
         //Filtered out by the user
-        return;
+        return true;
     }
 
     const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
@@ -418,9 +430,12 @@ void ProcessPrint(const vector<string> &tokens, const string &symbol_to_filter)
     }
     else
     {
-        cout << "ProcessPrint(): Can't find symbol [" << symbol_to_print << "]" << '\n';
-        return;
+        cout << "ProcessPrint(): Symbol is not registered in the system ["
+            << symbol_to_print << "]" << '\n';
+        return false;
     }
+
+    return true;
 }
 
 /**
@@ -428,16 +443,16 @@ void ProcessPrint(const vector<string> &tokens, const string &symbol_to_filter)
  * @param tokens for PRINT_ALL command
  * @param symbol to be shown in output
  */
-void ProcessPrintFull(const vector<string> &tokens, const string &symbol_to_filter)
+bool ProcessPrintFull(const vector<string> &tokens, const string &symbol_to_filter)
 {
-    PrintData obj("PRINT_FULL");
+    static PrintData obj("PRINT_FULL");
     obj.processTokens(tokens);
 
     if (!obj.isProcessed())
     {
         cout << "ProcessPrintFull(): Tokens were not processed successfully. Reason: ["
             << obj.errorMessage() << "]" << '\n';
-        return;
+        return false;
     }
 
     const string &symbol_to_print = obj.getSymbol();
@@ -445,7 +460,7 @@ void ProcessPrintFull(const vector<string> &tokens, const string &symbol_to_filt
     if(symbol_to_print != symbol_to_filter && !symbol_to_filter.empty())
     {
         //Filtered out by the user
-        return;
+        return true;
     }
 
     const auto &symbol_to_orders = OrderRegistry::get().getSymbolToOrdersBind();
@@ -460,9 +475,12 @@ void ProcessPrintFull(const vector<string> &tokens, const string &symbol_to_filt
     }
     else
     {
-        cout << "ProcessPrintFull(): Can't find symbol [" << symbol_to_print << "]" << '\n';
-        return;
+        cout << "ProcessPrintFull(): Symbol is not registered in the system ["
+             << symbol_to_print << "]" << '\n';
+        return false;
     }
+
+    return true;
 }
 
 } // namespace
@@ -495,24 +513,24 @@ const string & MdProcessor::getFilter() const
     return symbol_;
 }
 
-void MdProcessor::process(const vector<string> &tokens)
+bool MdProcessor::process(const vector<string> &tokens)
 {
     try
     {
         if (!tokens.empty())
         {
-            handlers_.at(tokens[MdCommandData::COMMAND_NAME])(tokens, getFilter());
+            return handlers_.at(tokens[MdCommandData::COMMAND_NAME])(tokens, getFilter());
         }
         else
         {
             cout << "MdProcessor::process(): Provided array of tokens is empty. Ignoring" << '\n';
-            return;
+            return false;
         }
     }
     catch (out_of_range &e)
     {
         cerr << "MdProcessor::process(): bad key for handler map. Exception: ["
-        << string(e.what()) << "]" << '\n';
-        return;
+            << string(e.what()) << "]" << '\n';
+        return false;
     }
 }

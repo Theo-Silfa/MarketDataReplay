@@ -54,12 +54,13 @@ public:
     /**
      * Main routine for processing the tokens in to commands
      * @param tokens what to be processed
+     * @return true if the processing was successfull false otherwise
      */
-    void process(const vector<string> &tokens);
+    bool process(const vector<string> &tokens);
 
 protected:
     /** Token handler definition */
-    using MdHandler = function<void(const vector<string> &, const string &)>;
+    using MdHandler = function<bool(const vector<string> &, const string &)>;
 
     /** Handler map definition */
     using MdHandlerMap = unordered_map<string, MdHandler>;

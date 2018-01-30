@@ -43,17 +43,24 @@ int main(int argc, const char * argv[])
         exit(EXIT_FAILURE);
     }
 
+    vector<string> tokens;
     md::processors::MdProcessor processor;
-
     processor.setFilter(symbol);
 
     //Iterate through the lines of file and feed each to the processor
     for (string line; getline( infs, line ); )
     {
-        if(!line.empty())
+        if (line.empty())
         {
-            const auto tokens = split(line, ',');
-            processor.process(tokens);
+            //Do not process empty lines
+            continue;
+        }
+
+        tokens = split(line, ',');
+
+        if (!processor.process(tokens))
+        {
+            cout << "Failure line: [" << line << "]" << '\n';
         }
     }
 
